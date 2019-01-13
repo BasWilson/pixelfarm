@@ -1,0 +1,113 @@
+/* CSS files add styling rules to your content */
+
+body {
+  font-family: "Benton Sans", "Helvetica Neue", helvetica, arial, sans-serif;
+  margin: 0;
+  color: white;
+  text-align:center;
+  user-select: none;
+  font-size: 20px;
+}
+main {
+  margin: 0 auto;
+  width: 100vw;
+  height: 100vh;
+  background-color: darkgreen;
+}
+h1 {
+  font-style: italic;
+  color: #373fff;
+}
+
+nav {
+  width: 100%;
+}
+
+.bold {
+  font-weight: bold;
+}
+
+.noti-box {
+  display: none; 
+  position: fixed; 
+  z-index: 10;
+  bottom: 0px;
+  left: 0px;
+  max-height: fit-content;
+  width: 100%;
+  position: fixed;
+  height: 10%;
+  background-color:crimson;
+  border-top: 1px solid black;
+}
+
+.noti-content {
+  padding: 10px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.noti-content p {
+  margin: 0px;
+  font-size: 25px;
+  font-style: italic;
+  line-height: 20px;
+}
+
+.startup-div {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: white;
+  color: black;
+  z-index: 10;
+}
+input {
+  font-style: italic;
+  display: block;
+  margin-bottom: 10px;
+  padding: 5px;
+  width: 200px;
+  border: 1px solid lightgrey;
+  border-radius: 3px;
+  font-size: 16px;
+  outline-color: rgb(255, 0, 242)
+}
+
+form {
+  margin-bottom: 25px;
+  padding: 15px;
+  background-color: cyan;
+  display: inline-block;
+  width: auto;
+  max-width: 340px;
+  border-radius: 3px;
+  text-align: left;
+}
+
+button {
+  font-size: 16px;
+  border-radius: 3px;
+  background-color: lightgrey;
+  border: 1px solid grey;
+  box-shadow: 2px 2px teal;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: yellow;
+}
+
+button:active {
+  box-shadow: none;
+}
+
+.selected-item {
+  background-color: yellow;
+}
+
+.selected-crop {
+  background-color: yellow;
+}

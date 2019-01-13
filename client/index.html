@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>Farming Game</title>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- import the webpage's stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/game.css">
+
+
+</head>
+
+<body>
+  <div id="noti-box" class="noti-box">
+    <div class="noti-content">
+      <p id="noti-text">Some notification to be shown</p>
+    </div>
+  </div>
+
+  <main>
+
+    <div class="startup-div">
+      <h1>farming-game</h1>
+      <p class="bold">Hi there farmer</p>
+      <p>Join farm</p>
+      <form>
+        <input type="text" id="join-farm-input" placeholder="123456:PASSWORD" required />
+        <button onclick="joinFarm()">Enter farm</button>
+      </form>
+      <p>New farm</p>
+      <form>
+        <input type="text" id="new-farm-name-input" placeholder="Farm name" required />
+        <input type="password" id="new-farm-pass-input" placeholder="Password" required />
+        <button onclick="createFarm()">Create farm</button>
+      </form>
+    </div>
+    <div class="hud">
+      <div class="buttons">
+        <p>Next<img src="images/dpad_down_button.png" /></p>
+        <p>Previous<img src="images/dpad_up_button.png" /></p>
+        <p>Select tool<img src="images/x_button.png" /></p>
+        <p>Close menu<img src="images/triangle_button.png" /></p>
+      </div>
+      <div class="items">
+        <i>Tools</i>
+      </div>
+
+      <div class="crops">
+        <i>Crops</i>
+      </div>
+
+    </div>
+
+    <div class="farm-field">
+      <div class="farm-settings">
+        <p id="farm-name"></p>
+        <p id="farm-money"></p>
+        <p id="farm-selected-item"></p>
+      </div>
+
+    </div>
+
+
+  </main>
+
+
+  <!-- import the webpage's javascript file -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/script.js"></script>
+  <script src="js/mouseKeyboard.js"></script>
+  <script src="js/gamepad.js"></script>
+</body>
+
+</html>
