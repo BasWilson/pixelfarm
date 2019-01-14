@@ -18,11 +18,12 @@ var hudCrops = {
     selectedRow: 0
 }
 
-
+// Just the generic function when an unassinged button is pressed
 function select(button) {
     console.log(`Clicked ${gpButtons[button].name}`);
 }
 
+// The move function called by button events
 function move(direction) {
     if (direction == 12) {
         movement.up();
@@ -36,14 +37,17 @@ function move(direction) {
 }
 
 function hudItemNavigate(direction) {
+    // Button is dpad_up 
     if (direction == 12) {
         if (hudItems.selectedRow > 0) {
+            // change the selcted html element
             $(`#item-${hudItems.selectedRow}`).removeClass('selected-item');
             hudItems.selectedRow--;
             $(`#item-${hudItems.selectedRow}`).addClass('selected-item');
         }
+        // Button is dpad_down
     } else if (direction == 13) {
-        if (hudItems.selectedRow < hudItems.items -1) {
+        if (hudItems.selectedRow < hudItems.items - 1) {
             $(`#item-${hudItems.selectedRow}`).removeClass('selected-item');
             hudItems.selectedRow++;
             $(`#item-${hudItems.selectedRow}`).addClass('selected-item');
@@ -51,7 +55,7 @@ function hudItemNavigate(direction) {
     }
 }
 
-
+// Same as above
 function hudCropNavigate(direction) {
     if (direction == 12) {
         if (hudCrops.selectedRow > 0) {
@@ -60,7 +64,7 @@ function hudCropNavigate(direction) {
             $(`#crop-${hudCrops.selectedRow}`).addClass('selected-crop');
         }
     } else if (direction == 13) {
-        if (hudCrops.selectedRow < hudCrops.items -1) {
+        if (hudCrops.selectedRow < hudCrops.items - 1) {
             $(`#crop-${hudCrops.selectedRow}`).removeClass('selected-crop');
             hudCrops.selectedRow++;
             $(`#crop-${hudCrops.selectedRow}`).addClass('selected-crop');
@@ -69,7 +73,7 @@ function hudCropNavigate(direction) {
 
 }
 
-
+// These handle the movement on the grid
 movement = {
     down: function () {
         if (screenGrid.selectedRow < screenGrid.rows - 1) {
@@ -77,6 +81,7 @@ movement = {
             $(`#${screenGrid.selectedRow}-${screenGrid.selectedColumn}`).removeClass('selected-block');
             // Update the selected row
             screenGrid.selectedRow++;
+            // Set the newly selected block as active
             $(`#${screenGrid.selectedRow}-${screenGrid.selectedColumn}`).addClass('selected-block')
             screenGrid.currentBlock = screenGrid.selectedColumn * screenGrid.selectedRow;
             moveSound('move0');
@@ -117,18 +122,23 @@ movement = {
     }
 }
 
-function toggleCrops () {
+// The toggle functions are to toggle the menus for crops and items
+function toggleCrops() {
+    // fade out or in crops menu
     $('.crops').fadeToggle('fast', () => {
+        // if crops is being shown we show the hud , else we hide hud and show the crops
         if ($('.crops').css('display') != 'none') {
             $('.hud').fadeIn('fast')
             $(`#${screenGrid.selectedRow}-${screenGrid.selectedColumn}`).removeClass('selected-block')
+            // Change the button functions
             gpButtons[0].function = selectCrop;
             gpButtons[1].function = toggleCrops;
             gpButtons[12].function = hudCropNavigate;
             gpButtons[13].function = hudCropNavigate;
             gpButtons[14].function = hudCropNavigate;
             gpButtons[15].function = hudCropNavigate;
-            changeButtons([{button: 'dpad_down', text: 'Next'}, {button: 'dpad_up', text: 'Previous'}, {button: 'x', text: 'Select'}, {button: 'circle', text: 'Close'},]);
+            // Change the displayed buttons so you know what to do
+            changeButtons([{ button: 'dpad_down', text: 'Next' }, { button: 'dpad_up', text: 'Previous' }, { button: 'x', text: 'Select' }, { button: 'circle', text: 'Close' },]);
         } else {
             $(`#${screenGrid.selectedRow}-${screenGrid.selectedColumn}`).addClass('selected-block')
             gpButtons[1].function = select;
@@ -137,12 +147,13 @@ function toggleCrops () {
             gpButtons[13].function = move;
             gpButtons[14].function = move;
             gpButtons[15].function = move;
-            changeButtons([{button: 'square', text: 'Crops'}, {button: 'triangle', text: 'Tools'}]);
+            // Change the displayed buttons so you know what to do
+            changeButtons([{ button: 'square', text: 'Crops' }, { button: 'triangle', text: 'Tools' }]);
         }
     })
 }
 
-function toggleItems () {
+function toggleItems() {
     $('.items').fadeToggle('fast', () => {
         if ($('.items').css('display') != 'none') {
             $('.hud').fadeIn('fast')
@@ -153,7 +164,8 @@ function toggleItems () {
             gpButtons[13].function = hudItemNavigate;
             gpButtons[14].function = hudItemNavigate;
             gpButtons[15].function = hudItemNavigate;
-            changeButtons([{button: 'dpad_down', text: 'Next'}, {button: 'dpad_up', text: 'Previous'}, {button: 'x', text: 'Select'}, {button: 'circle', text: 'Close'},]);
+            // Change the displayed buttons so you know what to do
+            changeButtons([{ button: 'dpad_down', text: 'Next' }, { button: 'dpad_up', text: 'Previous' }, { button: 'x', text: 'Select' }, { button: 'circle', text: 'Close' },]);
         } else {
             $(`#${screenGrid.selectedRow}-${screenGrid.selectedColumn}`).addClass('selected-block')
             gpButtons[1].function = select;
@@ -162,12 +174,14 @@ function toggleItems () {
             gpButtons[13].function = move;
             gpButtons[14].function = move;
             gpButtons[15].function = move;
-            changeButtons([{button: 'square', text: 'Crops'}, {button: 'triangle', text: 'Tools'}]);
+            // Change the displayed buttons so you know what to do
+            changeButtons([{ button: 'square', text: 'Crops' }, { button: 'triangle', text: 'Tools' }]);
         }
     })
 }
 
-function changeButtons (buttonArray) {
+// The buttons shown on the ui
+function changeButtons(buttonArray) {
     $('.buttons').empty()
     for (let i = 0; i < buttonArray.length; i++) {
         const btn = `<p>${buttonArray[i].text}<img src="images/${buttonArray[i].button}_button.png" /></p>`;
