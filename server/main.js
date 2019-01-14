@@ -4,7 +4,74 @@ const striptags = require('striptags');
 var MongoClient = require('mongodb').MongoClient;
 var url = "mongodb://localhost:27017/";
 
+const crops = [
+    {
+        'name': 'corn',
+        'amount': 1,
+        'use': plantCrop,
+        'prematureIcon': '🌱',
+        'icon': '🌽',
+        'growTime': 30
+      },
+      {
+        'name': 'grape',
+        'amount': 1,
+        'use': plantCrop,
+        'prematureIcon': '🌱',
+        'icon': '🍇',
+        'growTime': 40
+      },
+      {
+        'name': 'watermelon',
+        'amount': 1,
+        'use': plantCrop,
+        'prematureIcon': '🌱',
+        'icon': '🍉',
+        'growTime': 45
+      },
+      {
+        'name': 'carrot',
+        'amount': 1,
+        'use': plantCrop,
+        'prematureIcon': '🌱',
+        'icon': '🥕',
+        'growTime': 20
+      },
+      {
+        'name': 'cucumber',
+        'amount': 1,
+        'use': plantCrop,
+        'prematureIcon': '🌱',
+        'icon': '🥒',
+        'growTime': 25
+      },
+      {
+        'name': 'eggplant',
+        'amount': 1,
+        'use': plantCrop,
+        'prematureIcon': '🌱',
+        'icon': '🍆',
+        'growTime': 25
+      },
+      {
+        'name': 'potato',
+        'amount': 1,
+        'use': plantCrop,
+        'prematureIcon': '🌱',
+        'icon': '🥔',
+        'growTime': 15
+      },
+      {
+        'name': 'broccoli',
+        'amount': 1,
+        'use': plantCrop,
+        'prematureIcon': '🌱',
+        'icon': '🥦',
+        'growTime': 28
+      }
+  ]
 
+  
 server.on('connection', (socket) => {
     console.log('A farmer has connected');
 
@@ -44,7 +111,9 @@ async function createFarm(name, pass, socket, io) {
                 prepared: false,
                 ready: false,
                 selected: false,
-                name: 'grass'
+                name: 'grass',
+                growTime: 0,
+                startedGrowing: 0
             }
             grid.blocks[r].push(obj);
         }
@@ -84,6 +153,7 @@ async function createFarm(name, pass, socket, io) {
 
 
 }
+
 async function joinFarm(id, pass, socket, io) {
 
     var data = { error: "Farm not found", grid: [], settings: {} };
@@ -172,7 +242,7 @@ function sendCropBlock(farmid, query, grid, row, column, cropid) {
         dbo.collection("blocks").updateOne(query, { $set: { blocks: grid } }, function (err, res) {
             if (err) throw err;
             console.log("Block updated: " + res);
-            server.to(farmid.toString()).emit('singleCropBlockUpdate', row, column, cropid);
+            server.to(farmid.toString()).emit('singleCropBlockUpdate', row, column, cropid, grid[row][column].growTime, grid[row][column].startedGrowing);
             db.close();
         });
     });
@@ -197,6 +267,8 @@ async function plantCrop(farmid, row, column, cropid, socket, io) {
             // Check if block is prepared and there is no crop
             if (grid[row][column].prepared && grid[row][column].crop == -1) {
                 grid[row][column].crop = cropid;
+                grid[row][column].startedGrowing = Date.now();
+                grid[row][column].growTime = crops[cropid].growTime;
                 console.log('Crop planted: ')
                 console.log(grid[row][column])
                 sendCropBlock(farmid, query, grid, row, column, cropid);
