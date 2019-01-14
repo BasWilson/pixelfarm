@@ -423,6 +423,7 @@ socket.on('farmJoined', (data) => {
   calcDimensions();
   $('#farm-money').text(`$${data.settings[0].money.toString().toUpperCase()}`)
   $('#farm-name').text(`${data.settings[0].name.toUpperCase()}'S FARM`)
+  $('#farm-id').text(`SHARE ID: ${data.settings[0].id}`)
   // Show game
   $('.startup-div').fadeToggle('fast', () => {
     loaded = true;
