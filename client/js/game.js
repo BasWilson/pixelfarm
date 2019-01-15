@@ -363,7 +363,7 @@ function updateCropImage(r, c, status, growTime = 0) {
   } else {
     // Update the font size every interval so it looks like its growing
     $(`#${r}-${c}`).text(crops[grid[r][c].crop].prematureIcon);
-    let fontSize = parseFloat($(`#${r}-${c}`).css('fontSize')) + ((screenGrid.blockHeight - 10) / growTime);
+    let fontSize = parseFloat($(`#${r}-${c}`).css('fontSize')) + ((screenGrid.blockHeight - 10) / growTime / 2);
     console.log("Inceremnt size: " + (screenGrid.blockHeight - 10) / growTime)
     $(`#${r}-${c}`).css('fontSize', fontSize + 'px');
   }
