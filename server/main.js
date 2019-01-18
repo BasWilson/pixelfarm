@@ -1,5 +1,5 @@
 const io = require('socket.io');
-const server = io.listen(4444);
+const server = io.listen(5454);
 const striptags = require('striptags');
 var MongoClient = require('mongodb').MongoClient;
 var url = "mongodb://localhost:27017/";
@@ -19,7 +19,7 @@ const crops = [
         'use': plantCrop,
         'prematureIcon': '🌱',
         'icon': '🍇',
-        'growTime': 40
+        'growTime': 3600
     },
     {
         'name': 'watermelon',
@@ -27,7 +27,7 @@ const crops = [
         'use': plantCrop,
         'prematureIcon': '🌱',
         'icon': '🍉',
-        'growTime': 45
+        'growTime': 7200
     },
     {
         'name': 'carrot',

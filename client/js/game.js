@@ -16,7 +16,7 @@ $(document).ready(() => {
 
 });
 
-const socket = io('http://188.166.122.43:4444');
+const socket = io('http://188.166.122.43:5454');
 var growingBlocks = []
 var notificationTimeout = -1;
 var money = 100;
@@ -67,7 +67,7 @@ const crops = [
     'use': plantCrop,
     'prematureIcon': '🌱',
     'icon': '🍇',
-    'growTime': 40
+    'growTime': 3600
   },
   {
     'name': 'watermelon',
@@ -75,7 +75,7 @@ const crops = [
     'use': plantCrop,
     'prematureIcon': '🌱',
     'icon': '🍉',
-    'growTime': 45
+    'growTime': 7200
   },
   {
     'name': 'carrot',
@@ -425,7 +425,7 @@ socket.on('farmJoined', (data) => {
   $('#farm-name').text(`${data.settings[0].name.toUpperCase()}'S FARM`)
   $('#farm-id').text(`SHARE ID: ${data.settings[0].id}`)
   // Show game
-  $('.startup-div').fadeToggle('fast', () => {
+  $('#wrapper').fadeToggle('fast', () => {
     loaded = true;
   });
 

@@ -9,6 +9,7 @@
 
   <!-- import the webpage's stylesheet -->
   <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/mainmenu.css">
   <link rel="stylesheet" href="css/game.css">
 
 
@@ -22,24 +23,28 @@
   </div>
 
   <main>
+      <div id="wrapper">
 
     <div class="startup-div">
-      <h1>farming-game</h1>
-      <p class="bold">Hi there farmer</p>
-      <p>Join farm</p>
-      <form>
-        <input type="text" id="join-farm-input" placeholder="123456:PASSWORD" required />
-        <button onclick="joinFarm()">Enter farm</button>
-      </form>
-      <p>New farm</p>
-      <form>
-        <input type="text" id="new-farm-name-input" placeholder="Farm name" required />
-        <input type="password" id="new-farm-pass-input" placeholder="Password" required />
-        <button onclick="createFarm()">Create farm</button>
-      </form>
+          <div id="clouds"></div>
+          <div id="ground"></div>
+      <h1 class="header">PixelFarm</h1>
+      <div class="menu-buttons">
+          <form>
+              <input type="text" id="join-farm-input" placeholder="123456:PASSWORD" required />
+              <button onclick="joinFarm()">ENTER FARM</button>
+            </form>
+            <form>
+              <input type="text" id="new-farm-name-input" placeholder="Farm name" required />
+              <input type="password" id="new-farm-pass-input" placeholder="Password" required />
+              <button onclick="createFarm()">CREATE NEW FARM</button>
+            </form>
+      </div>
 
-      <p>This game is meant to be played with a controller and does not function well with mouse and keyboard at this point in time.</p>
+
     </div>
+  </div>
+
     <div class="hud">
 
       <div class="items">
@@ -70,11 +75,13 @@
 
 
   <!-- import the webpage's javascript file -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/1.18.0/TweenMax.min.js"></script>
   <script src="js/controls.js"></script>
   <script src="js/game.js"></script>
   <script src="js/mouseKeyboard.js"></script>
+  <script src="js/mainmenu.js"></script>
   <script src="js/gamepad.js"></script>
 </body>
 

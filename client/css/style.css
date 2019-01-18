@@ -15,10 +15,6 @@ main {
   height: 100vh;
   background-color: darkgreen;
 }
-h1 {
-  font-style: italic;
-  color: #373fff;
-}
 
 nav {
   width: 100%;
@@ -61,7 +57,6 @@ nav {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: white;
   color: black;
   z-index: 10;
 }
@@ -69,18 +64,18 @@ input {
   font-style: italic;
   display: block;
   margin-bottom: 10px;
-  padding: 5px;
+  padding: 10px;
   width: 200px;
-  border: 1px solid lightgrey;
-  border-radius: 3px;
+  background-color: #AEE7FF;
+  border: 1px solid rgb(150, 224, 255);
   font-size: 16px;
-  outline-color: rgb(255, 0, 242)
+  outline-color:#90CF6A;
+  transition: all .2s ease-in-out;
 }
 
 form {
   margin-bottom: 25px;
   padding: 15px;
-  background-color: cyan;
   display: inline-block;
   width: auto;
   max-width: 340px;
@@ -91,14 +86,17 @@ form {
 button {
   font-size: 16px;
   border-radius: 3px;
-  background-color: lightgrey;
-  border: 1px solid grey;
-  box-shadow: 2px 2px teal;
+  width: 150px;
+  height: 50px;
   cursor: pointer;
+  background-color: #90CF6A;
+  border: 1px solid rgb(121, 209, 67);
+  font-family: 'ZCOOL KuaiLe', cursive;
+  transition: all .2s ease-in-out;
 }
 
 button:hover {
-  background-color: yellow;
+  border: 1px solid #AEE7FF;
 }
 
 button:active {
@@ -106,9 +104,11 @@ button:active {
 }
 
 .selected-item {
-  background-color: yellow;
+  transition: all .2s ease-in-out;
+  border: 2px solid black;
 }
 
 .selected-crop {
-  background-color: yellow;
+  transition: all .2s ease-in-out;
+  border: 2px solid black;
 }
