@@ -95,6 +95,12 @@ server.on('connection', (socket) => {
     socket.on('plantCrop', (farmid, row, column, cropid) => {
         console.log("Planting crop:", farmid, row, column, cropid)
         plantCrop(striptags(farmid), row, column, cropid, socket, io)
+    });
+
+    // When a crop is planted
+    socket.on('harvestCrop', (farmid, row, column) => {
+        console.log("Harvesting crop:", farmid, row, column)
+        harvestCrop(striptags(farmid), row, column)
     })
 })
 
@@ -135,7 +141,7 @@ async function createFarm(name, pass, socket, io) {
         var dbo = db.db("farm");
 
         // Create the new farm obj with the data
-        var farmObj = { id: id, name: name, money: 100, password: pass };
+        var farmObj = { id: id, name: name, money: 100, password: pass, exp: 0 };
 
         // insert the farm settings
         dbo.collection("farms").insertOne(farmObj, function (err, res) {
@@ -150,9 +156,46 @@ async function createFarm(name, pass, socket, io) {
             if (err) throw err;
             console.log(`Grid inserted`);
             db.close();
+        });
+
+        const items = {
+            items: [
+                {
+                    name: 'hoe'
+                },
+                {
+                    name: 'scissors'
+                }
+            ],
+            id: id
+        }
+        dbo.collection("itemInventories").insertOne(items, function (err, res) {
+            if (err) throw err;
+            console.log(`Items inserted`);
+            db.close();
+        });
+
+        const crops = {
+            crops: [
+                {
+                    name: 'potato',
+                    amount: 10,
+                },
+                {
+                    name: 'corn',
+                    amount: 10
+                }
+            ],
+            id: id
+        }
+        dbo.collection("cropInventories").insertOne(crops, function (err, res) {
+            if (err) throw err;
+            console.log(`Crops inserted`);
+            db.close();
             console.log("Farm created")
             socket.emit('farmCreated', id, pass);
         });
+
 
         // Log all farms for simple use
         dbo.collection("farms").find({}).toArray(function (err, result) {
@@ -169,7 +212,7 @@ async function createFarm(name, pass, socket, io) {
 
 async function joinFarm(id, pass, socket, io) {
 
-    var data = { error: "Farm not found", grid: [], settings: {} };
+    var data = { error: "Farm not found", grid: [], settings: {}, cropInventory: {}, itemInventory: {} };
 
     console.log("Joining farm: " + id + ":" + pass);
 
@@ -196,6 +239,25 @@ async function joinFarm(id, pass, socket, io) {
             data.grid = result;
             data.error = null;
             db.close();
+        });
+
+        var query = { id: id };
+        // Find the blocks data for this farm
+        dbo.collection("cropInventories").find(query).toArray(function (err, result) {
+            if (err) throw err;
+            console.log('far found')
+            data.cropInventory = result;
+            db.close();
+
+        });
+
+        var query = { id: id };
+        // Find the blocks data for this farm
+        dbo.collection("itemInventories").find(query).toArray(function (err, result) {
+            if (err) throw err;
+            console.log('far found')
+            data.itemInventory = result;
+            db.close();
 
             // Let farmer join socket.io room for this farm
             socket.join(id.toString())
@@ -205,10 +267,86 @@ async function joinFarm(id, pass, socket, io) {
 
         });
 
+
     })
 
 }
 
+async function harvestCrop(farmid, row, column) {
+
+    console.log(`Harvesting block at ${row}X${column} for farm ${farmid}`);
+    var grid;
+    var query = { gridID: farmid };
+
+    MongoClient.connect(url, function (err, db) {
+        if (err) throw err;
+        var dbo = db.db("farm");
+        // find the blocks
+        dbo.collection("blocks").find(query).toArray(function (err, result) {
+            if (err) throw err;
+            console.log('Blocks found')
+            const block = result[0].blocks[row][column];
+            grid = result[0].blocks;
+            db.close();
+
+            // See if its ready to be harvested
+            console.log("Time left: " + (Date.now() - grid[row][column].startedGrowing));
+
+            if ((Date.now() - grid[row][column].startedGrowing) > (grid[row][column].growTime * 1000) && grid[row][column].crop != -1) {
+                //reward exp
+                const exp = grid[row][column].growTime * 10 / 3;
+                sendExpUpdate(farmid, exp);
+            }
+            // edit the block
+            grid[row][column].name = 'dirt';
+            grid[row][column].crop = -1;
+            grid[row][column].prepared = true;
+            grid[row][column].startedGrowing = 0;
+
+            //save and emit the block
+            sendBlock(farmid, query, grid, row, column)
+        });
+
+    });
+
+}
+
+async function sendExpUpdate(farmid, exp) {
+
+    MongoClient.connect(url, function (err, db) {
+        if (err) throw err;
+        var dbo = db.db("farm");
+        var newExp = 0;
+
+        var query = { id: farmid };
+        dbo.collection("farms").find(query).toArray(function (err, result) {
+            if (err) throw err;
+            // set the settings to the result
+            newExp = result[0].exp + exp;
+            console.log('EXP TO BE ADDED: ' + exp)
+            console.log('NEW EXP: ' + newExp)
+            db.close();
+            updateExp(farmid, query, newExp);
+        });
+    })
+
+}
+
+async function updateExp (farmid, query, exp) {
+    MongoClient.connect(url, function (err, db) {
+        if (err) throw err;
+        var dbo = db.db("farm");
+
+        dbo.collection("farms").updateOne(query, { $set: { exp:  exp} }, function (err, res) {
+            if (err) throw err;
+            console.log("Level updated: " + res);
+            // Emit to the room that a block has been updated
+            db.close();
+            server.to(farmid.toString()).emit('updateExp', exp);
+        });
+        
+    })
+}
 async function updateBlock(farmid, row, column, name, socket, io) {
 
     console.log(`Editing block at ${row}X${column} for farm ${farmid}`);
@@ -229,6 +367,8 @@ async function updateBlock(farmid, row, column, name, socket, io) {
             // edit the block
             grid[row][column].name = name;
             grid[row][column].prepared = true;
+            grid[row][column].crop = -1;
+            grid[row][column].ready = false;
 
             //save and emit the block
             sendBlock(farmid, query, grid, row, column)
@@ -289,6 +429,27 @@ async function plantCrop(farmid, row, column, cropid, socket, io) {
 
 }
 
+function canPurchase(farmid, price) {
+
+    MongoClient.connect(url, function (err, db) {
+        if (err) throw err;
+
+        var dbo = db.db("farm");
+
+        // Try to find if there is a farm with this id and pass
+        var query = { id: farmid };
+        dbo.collection("farms").find(query).toArray(function (err, result) {
+            if (err) throw err;
+            // set the settings to the result
+            db.close();
+            if (result.money > price) {
+                return true;
+            } else {
+                return false
+            }
+        });
+    });
+}
 function sendCropBlock(farmid, query, grid, row, column, cropid) {
     MongoClient.connect(url, function (err, db) {
         if (err) throw err;

@@ -72,7 +72,7 @@
   top: 20px;
   left: 20px;
   padding: 10px;
-  width: 12%;
+  width: 15%;
   background-color: #AEE7FF;
   color: black;
   z-index: 1;
@@ -81,10 +81,10 @@
 
 .crop {
   font-size: 22px;
-  width: 100%;
+  width: 80%;
   height: auto;
   transition: all .1s ease-in-out;
-  margin: 10px 0px;
+  margin: 10px 10px 10px 0px;
 
 }
 
@@ -112,4 +112,25 @@
   text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
   font-style: italic;
   font-weight: 400;
+}
+.exp-div {
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+}
+.exp-div div {
+  display: flex;
+  flex-direction: row;
+}
+
+.exp-div progress {
+  margin: 3px 10px;
+}
+
+.exp-div progress[value] {
+  height: 20px;
+}
+
+.exp-div a {
+  font-size: 20px;
 }

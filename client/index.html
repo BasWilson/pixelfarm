@@ -2,7 +2,7 @@
 <html lang="en">
 
 <head>
-  <title>Farming Game</title>
+  <title>PixelFarm</title>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -48,11 +48,11 @@
     <div class="hud">
 
       <div class="items">
-        <i>Tools</i>
+        <p>Tools</p>
       </div>
 
       <div class="crops">
-        <i>Crops</i>
+        <p>Crops</p>
       </div>
 
     </div>
@@ -63,6 +63,14 @@
         <p id="farm-money"></p>
         <p id="farm-id"></p>
         <p id="farm-selected-item"></p>
+        <div class="exp-div">
+          <div>
+              <a id="current-lvl">0</a>
+              <progress id="exp-value" value="0" max="100"></progress>
+              <a id="next-lvl">1</a>
+          </div>
+          <a id="exp-text" style="font-size: 15px">100 EXP TO LEVEL UP</a>
+        </div>
       </div>
       <div class="buttons">
         <p>Crops<img src="images/square_button.png" /></p>

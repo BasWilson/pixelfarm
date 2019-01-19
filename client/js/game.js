@@ -19,7 +19,6 @@ $(document).ready(() => {
 const socket = io('http://188.166.122.43:5454');
 var growingBlocks = []
 var notificationTimeout = -1;
-var money = 100;
 var blocks = [];
 var grid = []
 var farmId = 0;
@@ -27,6 +26,8 @@ var inMenu = false;
 var selectedCrop = 0;
 var selectedItem = 0;
 var loaded = false;
+var settings;
+var level = 0;
 
 const blocksPrefabs = {
   'grass': {
@@ -47,7 +48,7 @@ const items = [
   },
   {
     'name': 'scissors',
-    'use': cutItem
+    'use': harvestCrop
   }
 ]
 
@@ -59,7 +60,8 @@ const crops = [
     'use': plantCrop,
     'prematureIcon': '🌱',
     'icon': '🌽',
-    'growTime': 30
+    'growTime': 30,
+    'level': 0
   },
   {
     'name': 'grape',
@@ -67,7 +69,9 @@ const crops = [
     'use': plantCrop,
     'prematureIcon': '🌱',
     'icon': '🍇',
-    'growTime': 3600
+    'growTime': 3600,
+    'level': 30
+
   },
   {
     'name': 'watermelon',
@@ -75,7 +79,8 @@ const crops = [
     'use': plantCrop,
     'prematureIcon': '🌱',
     'icon': '🍉',
-    'growTime': 7200
+    'growTime': 7200,
+    'level': 40
   },
   {
     'name': 'carrot',
@@ -83,7 +88,8 @@ const crops = [
     'use': plantCrop,
     'prematureIcon': '🌱',
     'icon': '🥕',
-    'growTime': 20
+    'growTime': 20,
+    'level': 5,
   },
   {
     'name': 'cucumber',
@@ -91,7 +97,8 @@ const crops = [
     'use': plantCrop,
     'prematureIcon': '🌱',
     'icon': '🥒',
-    'growTime': 25
+    'growTime': 25,
+    'level': 10,
   },
   {
     'name': 'eggplant',
@@ -99,7 +106,8 @@ const crops = [
     'use': plantCrop,
     'prematureIcon': '🌱',
     'icon': '🍆',
-    'growTime': 25
+    'growTime': 25,
+    'level': 15,
   },
   {
     'name': 'potato',
@@ -107,7 +115,8 @@ const crops = [
     'use': plantCrop,
     'prematureIcon': '🌱',
     'icon': '🥔',
-    'growTime': 15
+    'growTime': 15,
+    'level': 0,
   },
   {
     'name': 'broccoli',
@@ -115,7 +124,8 @@ const crops = [
     'use': plantCrop,
     'prematureIcon': '🌱',
     'icon': '🥦',
-    'growTime': 28
+    'growTime': 28,
+    'level': 5,
   }
 ]
 
@@ -225,7 +235,7 @@ function spawnCrops() {
   var createdCrops = "";
 
   for (var i = 0; i < crops.length; i++) {
-    const crop = `<button onmouseover="selectCropMouse(this.id)" onclick="selectCrop(this.id)" id="crop-${i}" class="crop">${crops[i].name.toUpperCase()}</button></br>`;
+    const crop = `<button onmouseover="selectCropMouse(this.id)" onclick="selectCrop(this.id)" id="crop-${i}" class="crop">${crops[i].name.toUpperCase()} </button>${crops[i].amount}x</br>`;
     createdCrops += crop;
   }
   $('.crops').append(createdCrops)
@@ -254,12 +264,12 @@ function selectCrop() {
 }
 
 // This is to cut a crop once its finished, (Currently unused)
-function cutItem() {
-  if (grid[screenGrid.selectedRow][screenGrid.selectedColumn].crop != 0) {
-    grid[screenGrid.selectedRow][screenGrid.selectedColumn].crop = 0;
-    grid[screenGrid.selectedRow][screenGrid.selectedColumn].name = blocksPrefabs.dirt.name;
-    $(`#${screenGrid.selectedRow}-${screenGrid.selectedColumn}`).text('');
-    updateMoney(blocksPrefabs.corn.value);
+function harvestCrop() {
+  if (grid[screenGrid.selectedRow][screenGrid.selectedColumn].crop != -1) {
+    // grid[screenGrid.selectedRow][screenGrid.selectedColumn].crop = 0;
+    // grid[screenGrid.selectedRow][screenGrid.selectedColumn].name = blocksPrefabs.dirt.name;
+    // $(`#${screenGrid.selectedRow}-${screenGrid.selectedColumn}`).text('');
+    socket.emit('harvestCrop', settings.id, screenGrid.selectedRow, screenGrid.selectedColumn)
   }
 }
 
@@ -269,7 +279,8 @@ function plantCrop() {
   // Check if there is no crop and check if the block has been prepared (with a hoe)
   if (grid[screenGrid.selectedRow][screenGrid.selectedColumn].crop == -1 && grid[screenGrid.selectedRow][screenGrid.selectedColumn].prepared) {
     // Emit an event to the Node.JS server to ask if we can place the crop
-    socket.emit('plantCrop', farmId, screenGrid.selectedRow, screenGrid.selectedColumn, hudCrops.selectedRow)
+    console.log('sending')
+    socket.emit('plantCrop', settings.id, screenGrid.selectedRow, screenGrid.selectedColumn, hudCrops.selectedRow)
   } else {
     showNotification(3000, "Prepare the land before trying to plant seeds", true)
   }
@@ -281,14 +292,13 @@ function prepareBlock() {
   // Check if the land has not been prepared yet
   if (!grid[screenGrid.selectedRow][screenGrid.selectedColumn].prepared) {
     // Tell the server we would like to update the block to be prepared
-    socket.emit('updateBlock', farmId, screenGrid.selectedRow, screenGrid.selectedColumn, 'dirt')
+    socket.emit('updateBlock', settings.id, screenGrid.selectedRow, screenGrid.selectedColumn, 'dirt')
   }
 
 }
 
 // Unused function to update money in the UI
 function updateMoney(moneyToAdd) {
-  console.log(moneyToAdd)
   money += moneyToAdd;
   $('#farm-money').text(money + "$");
 }
@@ -403,6 +413,47 @@ function showNotification(duration, text, status) {
 
 }
 
+function calculateLevel () {
+
+  var currentExp = settings.exp;
+
+  // For every level you need to earn 1.15x more exp.
+  // A level increase once currentExp surpasses the needed amount of exp
+  // Level 0 to 1 requires 1000exp
+
+  // base level 0 exp
+  var expCount = 1000;
+  // For in the loop
+  var prevLevelExp = 0;
+  const multiplier = 1.21;
+  // 100 levels
+  for (let le = 1; le <= 100; le++) {
+    expCount *= multiplier;
+    // Check if current exp is in between values
+    if (currentExp > prevLevelExp && currentExp < expCount) {
+
+      // Check for a level up
+      if (le > level) {
+        levelUp();
+      }
+      // Append to game
+      $('#current-lvl').text(`${le}`)
+      $('#next-lvl').text(`${le + 1}`)
+      $('#exp-value').val(currentExp - prevLevelExp);
+      $('#exp-value').prop('max', expCount - prevLevelExp);
+      $('#exp-text').text(`${Math.round(expCount - currentExp)} EXP TO NEXT LEVEL`);
+      level = le;
+      return;
+    }
+    prevLevelExp = expCount;
+  }
+
+}
+
+function levelUp() {
+  playSound('levelup')
+}
+
 
 // If a farm is created by the server try to join it
 socket.on('farmCreated', (id, password) => {
@@ -417,13 +468,16 @@ socket.on('farmJoined', (data) => {
     alert(data.error)
   }
   // Set the variables
-  farmId = data.settings[0].id;
+  settings = data.settings[0];
   console.log(data)
   grid = data.grid[0].blocks;
+  // items = data.itemInventory[0].items;
+  // crops = data.cropInventory[0].crops;
   calcDimensions();
-  $('#farm-money').text(`$${data.settings[0].money.toString().toUpperCase()}`)
-  $('#farm-name').text(`${data.settings[0].name.toUpperCase()}'S FARM`)
-  $('#farm-id').text(`SHARE ID: ${data.settings[0].id}`)
+  $('#farm-money').text(`$${settings.money.toString().toUpperCase()}`)
+  $('#farm-name').text(`${settings.name.toUpperCase()}'S FARM`)
+  $('#farm-id').text(`SHARE ID: ${settings.id}`)
+  calculateLevel();
   // Show game
   $('#wrapper').fadeToggle('fast', () => {
     loaded = true;
@@ -445,14 +499,22 @@ socket.on('farmerJoined', (socketid) => {
 
 })
 
+socket.on('updateExp', (newExp) => {
+  console.log(newExp)
+  settings.exp = newExp;
+  calculateLevel();
+})
 
 // If the server has prepared the block, this will receive the update and will then update the grid variable
 socket.on('singleBlockUpdate', (row, column) => {
   console.log(`Block updated ${row}x${column}`)
+  grid[row][column].crop = -1;
+  grid[row][column].ready = false;
   grid[row][column].prepared = true;
   grid[row][column].name = blocksPrefabs.dirt.name;
   // apply the color
   $(`#${row}-${column}`).css('backgroundColor', blocksPrefabs.dirt.color);
+  $(`#${row}-${column}`).text("");
   // It also plays a sound haha
   playSound('hoe');
 })
@@ -467,4 +529,8 @@ socket.on('singleCropBlockUpdate', (row, column, cropid, growTime, startedGrowin
   growingBlocks.push({ r: row, c: column })
   // Set the text to the proper crop emoji
   $(`#${row}-${column}`).text(getCrop(row, column));
+})
+
+socket.on('updateMoney', (money) => {
+  updateMoney(money);
 })
