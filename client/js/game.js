@@ -29,6 +29,8 @@ var loaded = false;
 var settings;
 var level = 0;
 
+var itemInventory, cropInventory;
+
 const blocksPrefabs = {
   'grass': {
     'color': '#58B940',
@@ -213,14 +215,25 @@ function blockInteraction(id) {
 function spawnItems() {
 
   // Set the amount of items
-  hudItems.items = items.length;
+  hudItems.items = itemInventory.length;
 
   var createdItems = "";
 
-  for (var i = 0; i < items.length; i++) {
-    const item = `<button onmouseover="selectItemMouse(this.id)" onclick="selectItem(this.id)" id="item-${i}" class="item">${items[i].name.toUpperCase()}</button></br>`;
-    createdItems += item;
+  for (let it = 0; it < itemInventory.length; it++) {
+    for (var i = 0; i < items.length; i++) {
+      if (itemInventory[it].name == items[i].name) {
+        // Apply use property
+        itemInventory[it].use = items[i].use
+
+        // Create the UI element
+        const item = `<button onmouseover="selectItemMouse(this.id)" onclick="selectItem(this.id)" id="item-${it}" class="item">${itemInventory[it].name.toUpperCase()}</button></br>`;
+        createdItems += item;
+
+      }
+
+    }
   }
+
   $('.items').append(createdItems)
   $('#item-0').addClass('selected-item')
 
@@ -230,13 +243,18 @@ function spawnItems() {
 function spawnCrops() {
 
   // Set the amount of items
-  hudCrops.items = crops.length;
+  hudCrops.items = cropInventory.length;
 
   var createdCrops = "";
 
-  for (var i = 0; i < crops.length; i++) {
-    const crop = `<button onmouseover="selectCropMouse(this.id)" onclick="selectCrop(this.id)" id="crop-${i}" class="crop">${crops[i].name.toUpperCase()} </button>${crops[i].amount}x</br>`;
-    createdCrops += crop;
+  for (let it = 0; it < cropInventory.length; it++) {
+    for (var i = 0; i < crops.length; i++) {
+      if (cropInventory[it].name == crops[i].name) {
+        cropInventory[it].use = crops[i].use
+        const crop = `<button onmouseover="selectCropMouse(this.id)" onclick="selectCrop(this.id)" id="crop-${it}" class="crop">${cropInventory[it].name.toUpperCase()} </button>${cropInventory[it].amount}x</br>`;
+        createdCrops += crop;
+      }
+    }
   }
   $('.crops').append(createdCrops)
   $('#crop-0').addClass('selected-crop')
@@ -246,7 +264,7 @@ function spawnCrops() {
 // When navigation the menu with the gamepad this function is used to select an item/tool
 function selectItem() {
   //item = item.substr(item.length - 1);
-  selectedItem = items[hudItems.selectedRow];
+  selectedItem = itemInventory[hudItems.selectedRow];
   $('#farm-selected-item').html(`Selected item:<span style="color: cyan"> ${selectedItem.name.toUpperCase()}</span>`);
   //for keybourd: hideAllHud()
   toggleItems()
@@ -256,7 +274,7 @@ function selectItem() {
 // When navigation the menu with the gamepad this function is used to select an crop
 function selectCrop() {
   //item = item.substr(item.length - 1);
-  selectedItem = crops[hudCrops.selectedRow];
+  selectedItem = cropInventory[hudCrops.selectedRow];
   $('#farm-selected-item').html(`Selected crop:<span style="color: rgb(255, 0, 242)"> ${selectedItem.name.toUpperCase()}</span>`);
   //for keybourd: hideAllHud()
   toggleCrops()
@@ -280,7 +298,7 @@ function plantCrop() {
   if (grid[screenGrid.selectedRow][screenGrid.selectedColumn].crop == -1 && grid[screenGrid.selectedRow][screenGrid.selectedColumn].prepared) {
     // Emit an event to the Node.JS server to ask if we can place the crop
     console.log('sending')
-    socket.emit('plantCrop', settings.id, screenGrid.selectedRow, screenGrid.selectedColumn, hudCrops.selectedRow)
+    socket.emit('plantCrop', settings.id, screenGrid.selectedRow, screenGrid.selectedColumn, cropInventory[hudCrops.selectedRow].name)
   } else {
     showNotification(3000, "Prepare the land before trying to plant seeds", true)
   }
@@ -307,22 +325,42 @@ function updateMoney(moneyToAdd) {
 // create a new farm
 function createFarm() {
 
+  if ($('#new-div').css('display') == 'none') {
+    $('#join-div').hide('fast');
+    $('#new-div').show('fast');
+    return;
+  }
+
   const name = $('#new-farm-name-input').val();
   const pass = $('#new-farm-pass-input').val();
 
   if (name && pass) {
     // Ask the server
     socket.emit('createFarm', name, pass)
+  } else {
+    $("#new-farm-name-input").effect("shake", { times: 3, distance: 50 });
+    $("#new-farm-pass-input").effect("shake", { times: 3, distance: 50 });
   }
 
 }
 
 // Join a farm
 function joinFarm() {
+
+  // check if the menu is closed
+  if ($('#join-div').css('display') == 'none') {
+    $('#new-div').hide('fast');
+    $('#join-div').show('fast');
+    return;
+  }
   // Split the 123456:password input into an array
   const values = $('#join-farm-input').val().split(":");
-  if (values) {
-    socket.emit('joinFarm', values[0], values[1])
+  const id = values[0];
+  const pass = values[1];
+  if (id && pass) {
+    socket.emit('joinFarm', id, pass)
+  } else {
+    $("#join-farm-input").effect("shake", { times: 3, distance: 50 });
   }
 
 }
@@ -368,11 +406,11 @@ function updateCropImage(r, c, status, growTime = 0) {
   grid[r][c].ready = status;
   if (status) {
     // Set it to the grown item and set the font size accuratly
-    $(`#${r}-${c}`).text(crops[grid[r][c].crop].icon);
+    $(`#${r}-${c}`).text(cropInventory[grid[r][c].crop].icon);
     $(`#${r}-${c}`).css('fontSize', (screenGrid.blockHeight - 10));
   } else {
     // Update the font size every interval so it looks like its growing
-    $(`#${r}-${c}`).text(crops[grid[r][c].crop].prematureIcon);
+    $(`#${r}-${c}`).text(cropInventory[grid[r][c].crop].prematureIcon);
     let fontSize = parseFloat($(`#${r}-${c}`).css('fontSize')) + ((screenGrid.blockHeight - 10) / growTime / 2);
     console.log("Inceremnt size: " + (screenGrid.blockHeight - 10) / growTime)
     $(`#${r}-${c}`).css('fontSize', fontSize + 'px');
@@ -413,7 +451,7 @@ function showNotification(duration, text, status) {
 
 }
 
-function calculateLevel () {
+function calculateLevel() {
 
   var currentExp = settings.exp;
 
@@ -471,8 +509,8 @@ socket.on('farmJoined', (data) => {
   settings = data.settings[0];
   console.log(data)
   grid = data.grid[0].blocks;
-  // items = data.itemInventory[0].items;
-  // crops = data.cropInventory[0].crops;
+  itemInventory = data.itemInventory[0].items;
+  cropInventory = data.cropInventory[0].crops;
   calcDimensions();
   $('#farm-money').text(`$${settings.money.toString().toUpperCase()}`)
   $('#farm-name').text(`${settings.name.toUpperCase()}'S FARM`)
@@ -520,15 +558,21 @@ socket.on('singleBlockUpdate', (row, column) => {
 })
 
 // When the server has allowed the crop placement
-socket.on('singleCropBlockUpdate', (row, column, cropid, growTime, startedGrowing) => {
+socket.on('singleCropBlockUpdate', (row, column, cropName, growTime, startedGrowing) => {
   console.log(`Block updated ${row}x${column}`)
-  grid[row][column].crop = cropid;
-  grid[row][column].startedGrowing = startedGrowing;
-  grid[row][column].growTime = growTime;
-  // Push the crop to the growingBlocks so it is checked by the interval so it will visually grow
-  growingBlocks.push({ r: row, c: column })
-  // Set the text to the proper crop emoji
-  $(`#${row}-${column}`).text(getCrop(row, column));
+  for (let c = 0; c < cropInventory.length; c++) {
+    if (cropInventory[c].name == cropName) {
+      grid[row][column].crop = c;
+      grid[row][column].startedGrowing = startedGrowing;
+      grid[row][column].growTime = growTime;
+      // Push the crop to the growingBlocks so it is checked by the interval so it will visually grow
+      growingBlocks.push({ r: row, c: column })
+      // Set the text to the proper crop emoji
+      $(`#${row}-${column}`).text(getCrop(row, column));
+    }
+    
+  }
+
 })
 
 socket.on('updateMoney', (money) => {

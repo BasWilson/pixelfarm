@@ -8,6 +8,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <!-- import the webpage's stylesheet -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css" />
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/mainmenu.css">
   <link rel="stylesheet" href="css/game.css">
@@ -31,13 +32,18 @@
       <h1 class="header">PixelFarm</h1>
       <div class="menu-buttons">
           <form>
-              <input type="text" id="join-farm-input" placeholder="123456:PASSWORD" required />
-              <button onclick="joinFarm()">ENTER FARM</button>
+              <div style="display: none;" id="join-div">
+                  <input type="text" id="join-farm-input" placeholder="123456:PASSWORD" />
+              </div>
+              <button onclick="joinFarm()">JOIN FARM</button>
             </form>
             <form>
-              <input type="text" id="new-farm-name-input" placeholder="Farm name" required />
-              <input type="password" id="new-farm-pass-input" placeholder="Password" required />
-              <button onclick="createFarm()">CREATE NEW FARM</button>
+              <div style="display: none;" id="new-div">
+                  <input type="text" id="new-farm-name-input" placeholder="Farm name" />
+                  <input type="password" id="new-farm-pass-input" placeholder="Password" />
+              </div>
+
+              <button onclick="createFarm()">NEW FARM</button>
             </form>
       </div>
 
@@ -84,6 +90,7 @@
 
   <!-- import the webpage's javascript file -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/1.18.0/TweenMax.min.js"></script>
   <script src="js/controls.js"></script>

@@ -77,30 +77,32 @@ server.on('connection', (socket) => {
 
     // if client wants to create a farm
     socket.on('createFarm', (name, password) => {
-        createFarm(striptags(name), striptags(password), socket, io)
+        if (name && password) 
+            createFarm(striptags(name), striptags(password), socket, io)
     });
 
     // if client wants to join an existing farm
     socket.on('joinFarm', (id, password) => {
-        joinFarm(striptags(id), striptags(password), socket, io)
+        if (id && password) 
+            joinFarm(striptags(id), striptags(password), socket, io)
     });
 
     // when the client updates a block
     socket.on('updateBlock', (farmid, row, column, name) => {
-        console.log(farmid, row, column)
-        updateBlock(striptags(farmid), row, column, name, socket, io)
+        if (farmid && name) 
+            updateBlock(striptags(farmid), row, column, name, socket, io)
     });
 
     // When a crop is planted
-    socket.on('plantCrop', (farmid, row, column, cropid) => {
-        console.log("Planting crop:", farmid, row, column, cropid)
-        plantCrop(striptags(farmid), row, column, cropid, socket, io)
+    socket.on('plantCrop', (farmid, row, column, cropName) => {
+        if (farmid) 
+            plantCrop(striptags(farmid), row, column, cropName, socket, io)
     });
 
     // When a crop is planted
     socket.on('harvestCrop', (farmid, row, column) => {
-        console.log("Harvesting crop:", farmid, row, column)
-        harvestCrop(striptags(farmid), row, column)
+        if (farmid) 
+            harvestCrop(striptags(farmid), row, column)
     })
 })
 
@@ -178,12 +180,20 @@ async function createFarm(name, pass, socket, io) {
         const crops = {
             crops: [
                 {
-                    name: 'potato',
-                    amount: 10,
+                    'name': 'potato',
+                    'amount': 1,
+                    'use': '',
+                    'prematureIcon': '🌱',
+                    'icon': '🥔',
+                    'growTime': 15
                 },
                 {
-                    name: 'corn',
-                    amount: 10
+                    'name': 'corn',
+                    'amount': 10,
+                    'use': '',
+                    'prematureIcon': '🌱',
+                    'icon': '🌽',
+                    'growTime': 30
                 }
             ],
             id: id
@@ -212,9 +222,11 @@ async function createFarm(name, pass, socket, io) {
 
 async function joinFarm(id, pass, socket, io) {
 
+    console.log(id, pass)
     var data = { error: "Farm not found", grid: [], settings: {}, cropInventory: {}, itemInventory: {} };
 
     console.log("Joining farm: " + id + ":" + pass);
+    var errCount = 0;
 
     MongoClient.connect(url, function (err, db) {
         if (err) throw err;
@@ -224,8 +236,11 @@ async function joinFarm(id, pass, socket, io) {
         // Try to find if there is a farm with this id and pass
         var query = { id: id, password: pass };
         dbo.collection("farms").find(query).toArray(function (err, result) {
-            if (err) throw err;
-            console.log('farm found')
+            if (err) {
+                errCount++;
+                throw err;
+            }
+            console.log('Farm found')
             // set the settings to the result
             data.settings = result;
             db.close();
@@ -234,8 +249,10 @@ async function joinFarm(id, pass, socket, io) {
         var query = { gridID: id };
         // Find the blocks data for this farm
         dbo.collection("blocks").find(query).toArray(function (err, result) {
-            if (err) throw err;
-            console.log('Blocks found')
+            if (err) {
+                errCount++;
+                throw err;
+            }            console.log('Blocks found')
             data.grid = result;
             data.error = null;
             db.close();
@@ -244,8 +261,10 @@ async function joinFarm(id, pass, socket, io) {
         var query = { id: id };
         // Find the blocks data for this farm
         dbo.collection("cropInventories").find(query).toArray(function (err, result) {
-            if (err) throw err;
-            console.log('far found')
+            if (err) {
+                errCount++;
+                throw err;
+            }            console.log('Crop inv found')
             data.cropInventory = result;
             db.close();
 
@@ -254,16 +273,21 @@ async function joinFarm(id, pass, socket, io) {
         var query = { id: id };
         // Find the blocks data for this farm
         dbo.collection("itemInventories").find(query).toArray(function (err, result) {
-            if (err) throw err;
-            console.log('far found')
+            if (err) {
+                errCount++;
+                throw err;
+            }            console.log('Item inv found')
             data.itemInventory = result;
             db.close();
 
-            // Let farmer join socket.io room for this farm
-            socket.join(id.toString())
-            // Send back the data
-            server.to(id.toString()).emit('farmerJoined', socket.id);
-            socket.emit('farmJoined', data);
+            if (errCount == 0) {
+                // Let farmer join socket.io room for this farm
+                socket.join(id.toString())
+                // Send back the data
+                server.to(id.toString()).emit('farmerJoined', socket.id);
+                socket.emit('farmJoined', data);
+            }
+
 
         });
 
@@ -394,7 +418,7 @@ function sendBlock(farmid, query, grid, row, column) {
 }
 
 
-async function plantCrop(farmid, row, column, cropid, socket, io) {
+async function plantCrop(farmid, row, column, cropName, socket, io) {
 
     console.log(`Planting crop at ${row}X${column} for farm ${farmid}`);
     var grid;
@@ -414,13 +438,20 @@ async function plantCrop(farmid, row, column, cropid, socket, io) {
             // Check if block is prepared and there is no crop
             if (grid[row][column].prepared && grid[row][column].crop == -1) {
                 // set the properties of the block
-                grid[row][column].crop = cropid;
-                grid[row][column].startedGrowing = Date.now();
-                grid[row][column].growTime = crops[cropid].growTime;
-                console.log('Crop planted: ')
-                console.log(grid[row][column])
-                // send it back
-                sendCropBlock(farmid, query, grid, row, column, cropid);
+                for (let c = 0; c < crops.length; c++) {
+                    if (crops[c].name == cropName) {
+                        grid[row][column].crop = cropName;
+                        grid[row][column].startedGrowing = Date.now();
+                        grid[row][column].growTime = crops[c].growTime;
+                        console.log('Crop planted: ')
+                        console.log(grid[row][column])
+                        // send it back
+                        sendCropBlock(farmid, query, grid, row, column, cropName);
+                        break;
+                    }
+                    
+                }
+
             }
 
         });
@@ -450,7 +481,7 @@ function canPurchase(farmid, price) {
         });
     });
 }
-function sendCropBlock(farmid, query, grid, row, column, cropid) {
+function sendCropBlock(farmid, query, grid, row, column, cropName) {
     MongoClient.connect(url, function (err, db) {
         if (err) throw err;
         var dbo = db.db("farm");
@@ -459,7 +490,7 @@ function sendCropBlock(farmid, query, grid, row, column, cropid) {
             if (err) throw err;
             console.log("Block updated: " + res);
             // emit to the room that a block has been updated
-            server.to(farmid.toString()).emit('singleCropBlockUpdate', row, column, cropid, grid[row][column].growTime, grid[row][column].startedGrowing);
+            server.to(farmid.toString()).emit('singleCropBlockUpdate', row, column, cropName, grid[row][column].growTime, grid[row][column].startedGrowing);
             db.close();
         });
     });
