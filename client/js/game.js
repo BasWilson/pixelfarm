@@ -16,7 +16,6 @@ $(document).ready(() => {
 
 });
 
-const socket = io('http://188.166.122.43:5454');
 var growingBlocks = []
 var notificationTimeout = -1;
 var blocks = [];
@@ -31,105 +30,6 @@ var level = 0;
 
 var itemInventory, cropInventory;
 
-const blocksPrefabs = {
-  'grass': {
-    'color': '#58B940',
-    'name': 'grass'
-  },
-  'dirt': {
-    'color': '#3F2909',
-    'name': 'dirt'
-  },
-}
-
-// Tools/items that can be used in the game
-const items = [
-  {
-    'name': 'hoe',
-    'use': prepareBlock,
-  },
-  {
-    'name': 'scissors',
-    'use': harvestCrop
-  }
-]
-
-// All available crops
-const crops = [
-  {
-    'name': 'corn',
-    'amount': 1,
-    'use': plantCrop,
-    'prematureIcon': '🌱',
-    'icon': '🌽',
-    'growTime': 30,
-    'level': 0
-  },
-  {
-    'name': 'grape',
-    'amount': 1,
-    'use': plantCrop,
-    'prematureIcon': '🌱',
-    'icon': '🍇',
-    'growTime': 3600,
-    'level': 30
-
-  },
-  {
-    'name': 'watermelon',
-    'amount': 1,
-    'use': plantCrop,
-    'prematureIcon': '🌱',
-    'icon': '🍉',
-    'growTime': 7200,
-    'level': 40
-  },
-  {
-    'name': 'carrot',
-    'amount': 1,
-    'use': plantCrop,
-    'prematureIcon': '🌱',
-    'icon': '🥕',
-    'growTime': 20,
-    'level': 5,
-  },
-  {
-    'name': 'cucumber',
-    'amount': 1,
-    'use': plantCrop,
-    'prematureIcon': '🌱',
-    'icon': '🥒',
-    'growTime': 25,
-    'level': 10,
-  },
-  {
-    'name': 'eggplant',
-    'amount': 1,
-    'use': plantCrop,
-    'prematureIcon': '🌱',
-    'icon': '🍆',
-    'growTime': 25,
-    'level': 15,
-  },
-  {
-    'name': 'potato',
-    'amount': 1,
-    'use': plantCrop,
-    'prematureIcon': '🌱',
-    'icon': '🥔',
-    'growTime': 15,
-    'level': 0,
-  },
-  {
-    'name': 'broccoli',
-    'amount': 1,
-    'use': plantCrop,
-    'prematureIcon': '🌱',
-    'icon': '🥦',
-    'growTime': 28,
-    'level': 5,
-  }
-]
 
 // Calculate the dimensions of the main element so the farm fits
 function calcDimensions() {
@@ -211,76 +111,6 @@ function blockInteraction(id) {
   }
 }
 
-// This function creates the HTML elements for the items/tools
-function spawnItems() {
-
-  // Set the amount of items
-  hudItems.items = itemInventory.length;
-
-  var createdItems = "";
-
-  for (let it = 0; it < itemInventory.length; it++) {
-    for (var i = 0; i < items.length; i++) {
-      if (itemInventory[it].name == items[i].name) {
-        // Apply use property
-        itemInventory[it].use = items[i].use
-
-        // Create the UI element
-        const item = `<button onmouseover="selectItemMouse(this.id)" onclick="selectItem(this.id)" id="item-${it}" class="item">${itemInventory[it].name.toUpperCase()}</button></br>`;
-        createdItems += item;
-
-      }
-
-    }
-  }
-
-  $('.items').append(createdItems)
-  $('#item-0').addClass('selected-item')
-
-}
-
-// This function creates the HTML elements for the crops
-function spawnCrops() {
-
-  // Set the amount of items
-  hudCrops.items = cropInventory.length;
-
-  var createdCrops = "";
-
-  for (let it = 0; it < cropInventory.length; it++) {
-    for (var i = 0; i < crops.length; i++) {
-      if (cropInventory[it].name == crops[i].name) {
-        cropInventory[it].use = crops[i].use
-        const crop = `<button onmouseover="selectCropMouse(this.id)" onclick="selectCrop(this.id)" id="crop-${it}" class="crop">${cropInventory[it].name.toUpperCase()} </button>${cropInventory[it].amount}x</br>`;
-        createdCrops += crop;
-      }
-    }
-  }
-  $('.crops').append(createdCrops)
-  $('#crop-0').addClass('selected-crop')
-
-}
-
-// When navigation the menu with the gamepad this function is used to select an item/tool
-function selectItem() {
-  //item = item.substr(item.length - 1);
-  selectedItem = itemInventory[hudItems.selectedRow];
-  $('#farm-selected-item').html(`Selected item:<span style="color: cyan"> ${selectedItem.name.toUpperCase()}</span>`);
-  //for keybourd: hideAllHud()
-  toggleItems()
-  playSound('click');
-}
-
-// When navigation the menu with the gamepad this function is used to select an crop
-function selectCrop() {
-  //item = item.substr(item.length - 1);
-  selectedItem = cropInventory[hudCrops.selectedRow];
-  $('#farm-selected-item').html(`Selected crop:<span style="color: rgb(255, 0, 242)"> ${selectedItem.name.toUpperCase()}</span>`);
-  //for keybourd: hideAllHud()
-  toggleCrops()
-  playSound('click');
-}
-
 // This is to cut a crop once its finished, (Currently unused)
 function harvestCrop() {
   if (grid[screenGrid.selectedRow][screenGrid.selectedColumn].crop != -1) {
@@ -322,48 +152,6 @@ function updateMoney(moneyToAdd) {
 }
 
 
-// create a new farm
-function createFarm() {
-
-  if ($('#new-div').css('display') == 'none') {
-    $('#join-div').hide('fast');
-    $('#new-div').show('fast');
-    return;
-  }
-
-  const name = $('#new-farm-name-input').val();
-  const pass = $('#new-farm-pass-input').val();
-
-  if (name && pass) {
-    // Ask the server
-    socket.emit('createFarm', name, pass)
-  } else {
-    $("#new-farm-name-input").effect("shake", { times: 3, distance: 50 });
-    $("#new-farm-pass-input").effect("shake", { times: 3, distance: 50 });
-  }
-
-}
-
-// Join a farm
-function joinFarm() {
-
-  // check if the menu is closed
-  if ($('#join-div').css('display') == 'none') {
-    $('#new-div').hide('fast');
-    $('#join-div').show('fast');
-    return;
-  }
-  // Split the 123456:password input into an array
-  const values = $('#join-farm-input').val().split(":");
-  const id = values[0];
-  const pass = values[1];
-  if (id && pass) {
-    socket.emit('joinFarm', id, pass)
-  } else {
-    $("#join-farm-input").effect("shake", { times: 3, distance: 50 });
-  }
-
-}
 
 // Functions to play a sound
 function moveSound(sound) {
@@ -417,40 +205,6 @@ function updateCropImage(r, c, status, growTime = 0) {
   }
 }
 
-// This makes the notifications
-function showNotification(duration, text, status) {
-
-  // Get the elements
-  var notiText = document.getElementById('noti-text');
-  var notiBox = document.getElementById('noti-box');
-  // Clear the current notifiation
-  clearTimeout(notificationTimeout);
-
-  // Set the properties
-  notiText.innerHTML = text;
-  notiText.style.fontSize = (screenGrid.blockHeight - 10) + "px";
-  notiText.style.lineHeight = (screenGrid.blockHeight) + "px";
-
-  if (status) {
-    notiBox.style.backgroundColor = "cyan";
-    notiText.style.color = "black";
-  } else {
-    notiText.style.color = "white";
-    notiBox.style.backgroundColor = "crimson";
-  }
-
-  // Show it
-  $('.noti-box').fadeIn("fast");
-
-  // Start a timeout to hide it after given ms
-  notificationTimeout = setTimeout(function () {
-    notiText.innerHTML = "";
-    $('.noti-box').fadeOut("fast");
-    notificationTimeout = -1;
-  }, duration)
-
-}
-
 function calculateLevel() {
 
   var currentExp = settings.exp;
@@ -493,35 +247,7 @@ function levelUp() {
 }
 
 
-// If a farm is created by the server try to join it
-socket.on('farmCreated', (id, password) => {
-  socket.emit('joinFarm', id, password)
-})
 
-// When a farm is joined
-socket.on('farmJoined', (data) => {
-
-  // Check if thers an error
-  if (data.error) {
-    alert(data.error)
-  }
-  // Set the variables
-  settings = data.settings[0];
-  console.log(data)
-  grid = data.grid[0].blocks;
-  itemInventory = data.itemInventory[0].items;
-  cropInventory = data.cropInventory[0].crops;
-  calcDimensions();
-  $('#farm-money').text(`$${settings.money.toString().toUpperCase()}`)
-  $('#farm-name').text(`${settings.name.toUpperCase()}'S FARM`)
-  $('#farm-id').text(`SHARE ID: ${settings.id}`)
-  calculateLevel();
-  // Show game
-  $('#wrapper').fadeToggle('fast', () => {
-    loaded = true;
-  });
-
-})
 
 // When a farmer joins the current farm (room)
 socket.on('farmerJoined', (socketid) => {
