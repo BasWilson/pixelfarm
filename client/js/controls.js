@@ -18,6 +18,21 @@ var hudCrops = {
     selectedRow: 0
 }
 
+var hudMarketplaceItems = {
+    items: 0,
+    selectedRow: 0
+}
+
+var hudManagementItems = {
+    items: 2,
+    selectedRow: 0
+}
+
+var hudInventoryItems = {
+    items: 0,
+    selectedRow: 0
+}
+
 // Just the generic function when an unassinged button is pressed
 function select(button) {
     console.log(`Clicked ${gpButtons[button].name}`);
@@ -70,126 +85,102 @@ function hudCropNavigate(direction) {
             $(`#crop-${hudCrops.selectedRow}`).addClass('selected-crop');
         }
     }
-
 }
 
-// These handle the movement on the grid
-movement = {
-    down: function () {
-        if (screenGrid.selectedRow < screenGrid.rows - 1) {
-            // Remove the class from the previous selected one
-            $(`#${screenGrid.selectedRow}-${screenGrid.selectedColumn}`).removeClass('selected-block');
-            // Update the selected row
-            screenGrid.selectedRow++;
-            // Set the newly selected block as active
-            $(`#${screenGrid.selectedRow}-${screenGrid.selectedColumn}`).addClass('selected-block')
-            screenGrid.currentBlock = screenGrid.selectedColumn * screenGrid.selectedRow;
-            moveSound('move0');
+function hudMarketplaceNavigate(direction) {
+    if (direction == 12) {
+        if (hudMarketplaceItems.selectedRow > 0) {
+            $(`#marketplace-item-${hudMarketplaceItems.selectedRow}`).removeClass('selected-marketplace-item');
+            hudMarketplaceItems.selectedRow--;
+            $(`#marketplace-item-${hudMarketplaceItems.selectedRow}`).addClass('selected-marketplace-item');
         }
-    },
-    up: function () {
-        if (screenGrid.selectedRow < screenGrid.rows && screenGrid.selectedRow != 0) {
-            // Remove the class from the previous selected one
-            $(`#${screenGrid.selectedRow}-${screenGrid.selectedColumn}`).removeClass('selected-block');
-            // Update the selected row
-            screenGrid.selectedRow--;
-            $(`#${screenGrid.selectedRow}-${screenGrid.selectedColumn}`).addClass('selected-block')
-            screenGrid.currentBlock = screenGrid.selectedColumn * screenGrid.selectedRow;
-            moveSound('move1');
-        }
-    },
-    left: function () {
-        if (screenGrid.selectedColumn < screenGrid.columns && screenGrid.selectedColumn != 0) {
-            // Remove the class from the previous selected one
-            $(`#${screenGrid.selectedRow}-${screenGrid.selectedColumn}`).removeClass('selected-block');
-            // Update the selected row
-            screenGrid.selectedColumn--;
-            $(`#${screenGrid.selectedRow}-${screenGrid.selectedColumn}`).addClass('selected-block')
-            screenGrid.currentBlock = screenGrid.selectedColumn * screenGrid.selectedRow;
-            moveSound('move2');
-        }
-    },
-    right: function () {
-        if (screenGrid.selectedColumn < screenGrid.columns - 1) {
-            // Remove the class from the previous selected one
-            $(`#${screenGrid.selectedRow}-${screenGrid.selectedColumn}`).removeClass('selected-block');
-            // Update the selected row
-            screenGrid.selectedColumn++;
-            $(`#${screenGrid.selectedRow}-${screenGrid.selectedColumn}`).addClass('selected-block')
-            screenGrid.currentBlock = screenGrid.selectedColumn * screenGrid.selectedRow;
-            moveSound('move3');
+    } else if (direction == 13) {
+        if (hudMarketplaceItems.selectedRow < hudMarketplaceItems.items - 1) {
+            $(`#marketplace-item-${hudMarketplaceItems.selectedRow}`).removeClass('selected-marketplace-item');
+            hudMarketplaceItems.selectedRow++;
+            $(`#marketplace-item-${hudMarketplaceItems.selectedRow}`).addClass('selected-marketplace-item');
         }
     }
 }
 
-// The toggle functions are to toggle the menus for crops and items
-function toggleCrops() {
-    // fade out or in crops menu
-    $('.crops').fadeToggle('fast', () => {
-        // if crops is being shown we show the hud , else we hide hud and show the crops
-        if ($('.crops').css('display') != 'none') {
-            $('.hud').fadeIn('fast')
-            $(`#${screenGrid.selectedRow}-${screenGrid.selectedColumn}`).removeClass('selected-block')
-            // Change the button functions
-            gpButtons[0].function = selectCrop;
-            gpButtons[1].function = toggleCrops;
-            gpButtons[12].function = hudCropNavigate;
-            gpButtons[13].function = hudCropNavigate;
-            gpButtons[14].function = hudCropNavigate;
-            gpButtons[15].function = hudCropNavigate;
-            // Change the displayed buttons so you know what to do
-            changeButtons([{ button: 'dpad_down', text: 'Next' }, { button: 'dpad_up', text: 'Previous' }, { button: 'x', text: 'Select' }, { button: 'circle', text: 'Close' },]);
-        } else {
-            $(`#${screenGrid.selectedRow}-${screenGrid.selectedColumn}`).addClass('selected-block')
-            gpButtons[1].function = select;
-            gpButtons[0].function = blockInteraction;
-            gpButtons[12].function = move;
-            gpButtons[13].function = move;
-            gpButtons[14].function = move;
-            gpButtons[15].function = move;
-            // Change the displayed buttons so you know what to do
-            changeButtons([{ button: 'square', text: 'Crops' }, { button: 'triangle', text: 'Tools' }]);
+function hudManagementNavigate(direction) {
+    if (direction == 12) {
+        if (hudManagementItems.selectedRow > 0) {
+            $(`#management-item-${hudManagementItems.selectedRow}`).removeClass('selected-management-item');
+            hudManagementItems.selectedRow--;
+            $(`#management-item-${hudManagementItems.selectedRow}`).addClass('selected-management-item');
         }
-    })
-}
-
-function toggleItems() {
-    $('.items').fadeToggle('fast', () => {
-        if ($('.items').css('display') != 'none') {
-            $('.hud').fadeIn('fast')
-            $(`#${screenGrid.selectedRow}-${screenGrid.selectedColumn}`).removeClass('selected-block');
-            gpButtons[1].function = toggleItems;
-            gpButtons[0].function = selectItem;
-            gpButtons[12].function = hudItemNavigate;
-            gpButtons[13].function = hudItemNavigate;
-            gpButtons[14].function = hudItemNavigate;
-            gpButtons[15].function = hudItemNavigate;
-            // Change the displayed buttons so you know what to do
-            changeButtons([{ button: 'dpad_down', text: 'Next' }, { button: 'dpad_up', text: 'Previous' }, { button: 'x', text: 'Select' }, { button: 'circle', text: 'Close' },]);
-        } else {
-            $(`#${screenGrid.selectedRow}-${screenGrid.selectedColumn}`).addClass('selected-block')
-            gpButtons[1].function = select;
-            gpButtons[0].function = blockInteraction;
-            gpButtons[12].function = move;
-            gpButtons[13].function = move;
-            gpButtons[14].function = move;
-            gpButtons[15].function = move;
-            // Change the displayed buttons so you know what to do
-            changeButtons([{ button: 'square', text: 'Crops' }, { button: 'triangle', text: 'Tools' }]);
+    } else if (direction == 13) {
+        if (hudManagementItems.selectedRow < hudManagementItems.items - 1) {
+            $(`#management-item-${hudManagementItems.selectedRow}`).removeClass('selected-management-item');
+            hudManagementItems.selectedRow++;
+            $(`#management-item-${hudManagementItems.selectedRow}`).addClass('selected-management-item');
         }
-    })
-}
-
-// The buttons shown on the ui
-function changeButtons(buttonArray) {
-    $('.buttons').empty()
-    for (let i = 0; i < buttonArray.length; i++) {
-        const btn = `<p>${buttonArray[i].text}<img src="images/${buttonArray[i].button}_button.png" /></p>`;
-        $('.buttons').append(btn)
     }
 }
-function hideAllHud() {
-    $('.hud').fadeOut('fast')
-    $('.crops').fadeOut('fast')
-    $('.items').fadeOut('fast')
+
+
+function hudInventoryNavigate(direction) {
+    if (direction == 12) {
+        if (hudInventoryItems.selectedRow > 0) {
+            $(`#inventory-item-${hudInventoryItems.selectedRow}`).removeClass('selected-inventory-item');
+            hudInventoryItems.selectedRow--;
+            $(`#inventory-item-${hudInventoryItems.selectedRow}`).addClass('selected-inventory-item');
+        }
+    } else if (direction == 13) {
+        if (hudInventoryItems.selectedRow < hudInventoryItems.items - 1) {
+            $(`#inventory-item-${hudInventoryItems.selectedRow}`).removeClass('selected-inventory-item');
+            hudInventoryItems.selectedRow++;
+            $(`#inventory-item-${hudInventoryItems.selectedRow}`).addClass('selected-inventory-item');
+        }
+    }
 }
+
+    // These handle the movement on the grid
+    movement = {
+        down: function () {
+            if (screenGrid.selectedRow < screenGrid.rows - 1) {
+                // Remove the class from the previous selected one
+                $(`#${screenGrid.selectedRow}-${screenGrid.selectedColumn}`).removeClass('selected-block');
+                // Update the selected row
+                screenGrid.selectedRow++;
+                // Set the newly selected block as active
+                $(`#${screenGrid.selectedRow}-${screenGrid.selectedColumn}`).addClass('selected-block')
+                screenGrid.currentBlock = screenGrid.selectedColumn * screenGrid.selectedRow;
+                moveSound('move0');
+            }
+        },
+        up: function () {
+            if (screenGrid.selectedRow < screenGrid.rows && screenGrid.selectedRow != 0) {
+                // Remove the class from the previous selected one
+                $(`#${screenGrid.selectedRow}-${screenGrid.selectedColumn}`).removeClass('selected-block');
+                // Update the selected row
+                screenGrid.selectedRow--;
+                $(`#${screenGrid.selectedRow}-${screenGrid.selectedColumn}`).addClass('selected-block')
+                screenGrid.currentBlock = screenGrid.selectedColumn * screenGrid.selectedRow;
+                moveSound('move1');
+            }
+        },
+        left: function () {
+            if (screenGrid.selectedColumn < screenGrid.columns && screenGrid.selectedColumn != 0) {
+                // Remove the class from the previous selected one
+                $(`#${screenGrid.selectedRow}-${screenGrid.selectedColumn}`).removeClass('selected-block');
+                // Update the selected row
+                screenGrid.selectedColumn--;
+                $(`#${screenGrid.selectedRow}-${screenGrid.selectedColumn}`).addClass('selected-block')
+                screenGrid.currentBlock = screenGrid.selectedColumn * screenGrid.selectedRow;
+                moveSound('move2');
+            }
+        },
+        right: function () {
+            if (screenGrid.selectedColumn < screenGrid.columns - 1) {
+                // Remove the class from the previous selected one
+                $(`#${screenGrid.selectedRow}-${screenGrid.selectedColumn}`).removeClass('selected-block');
+                // Update the selected row
+                screenGrid.selectedColumn++;
+                $(`#${screenGrid.selectedRow}-${screenGrid.selectedColumn}`).addClass('selected-block')
+                screenGrid.currentBlock = screenGrid.selectedColumn * screenGrid.selectedRow;
+                moveSound('move3');
+            }
+        }
+    }

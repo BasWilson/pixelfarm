@@ -6,70 +6,80 @@ var url = "mongodb://localhost:27017/";
 
 const crops = [
     {
-        'name': 'corn',
-        'amount': 1,
-        'use': plantCrop,
-        'prematureIcon': '🌱',
-        'icon': '🌽',
-        'growTime': 30
+      'name': 'corn',
+      'amount': 1,
+      'use': plantCrop,
+      'prematureIcon': '🌱',
+      'icon': '🌽',
+      'growTime': 30,
+      'level': 0
     },
     {
-        'name': 'grape',
-        'amount': 1,
-        'use': plantCrop,
-        'prematureIcon': '🌱',
-        'icon': '🍇',
-        'growTime': 3600
+      'name': 'grape',
+      'amount': 1,
+      'use': plantCrop,
+      'prematureIcon': '🌱',
+      'icon': '🍇',
+      'growTime': 200,
+      'level': 30
+  
     },
     {
-        'name': 'watermelon',
-        'amount': 1,
-        'use': plantCrop,
-        'prematureIcon': '🌱',
-        'icon': '🍉',
-        'growTime': 7200
+      'name': 'watermelon',
+      'amount': 1,
+      'use': plantCrop,
+      'prematureIcon': '🌱',
+      'icon': '🍉',
+      'growTime': 250,
+      'level': 40
     },
     {
-        'name': 'carrot',
-        'amount': 1,
-        'use': plantCrop,
-        'prematureIcon': '🌱',
-        'icon': '🥕',
-        'growTime': 20
+      'name': 'carrot',
+      'amount': 1,
+      'use': plantCrop,
+      'prematureIcon': '🌱',
+      'icon': '🥕',
+      'growTime': 20,
+      'level': 5,
     },
     {
-        'name': 'cucumber',
-        'amount': 1,
-        'use': plantCrop,
-        'prematureIcon': '🌱',
-        'icon': '🥒',
-        'growTime': 25
+      'name': 'cucumber',
+      'amount': 1,
+      'use': plantCrop,
+      'prematureIcon': '🌱',
+      'icon': '🥒',
+      'growTime': 25,
+      'level': 10,
     },
     {
-        'name': 'eggplant',
-        'amount': 1,
-        'use': plantCrop,
-        'prematureIcon': '🌱',
-        'icon': '🍆',
-        'growTime': 25
+      'name': 'eggplant',
+      'amount': 1,
+      'use': plantCrop,
+      'prematureIcon': '🌱',
+      'icon': '🍆',
+      'growTime': 25,
+      'level': 15,
     },
     {
-        'name': 'potato',
-        'amount': 1,
-        'use': plantCrop,
-        'prematureIcon': '🌱',
-        'icon': '🥔',
-        'growTime': 15
+      'name': 'potato',
+      'amount': 1,
+      'use': plantCrop,
+      'prematureIcon': '🌱',
+      'icon': '🥔',
+      'growTime': 15,
+      'level': 0,
     },
     {
-        'name': 'broccoli',
-        'amount': 1,
-        'use': plantCrop,
-        'prematureIcon': '🌱',
-        'icon': '🥦',
-        'growTime': 28
+      'name': 'broccoli',
+      'amount': 1,
+      'use': plantCrop,
+      'prematureIcon': '🌱',
+      'icon': '🥦',
+      'growTime': 28,
+      'level': 5,
     }
-]
+  ]
+
 
 // When a client connects
 server.on('connection', (socket) => {
@@ -77,32 +87,42 @@ server.on('connection', (socket) => {
 
     // if client wants to create a farm
     socket.on('createFarm', (name, password) => {
-        if (name && password) 
+        if (name && password)
             createFarm(striptags(name), striptags(password), socket, io)
     });
 
     // if client wants to join an existing farm
     socket.on('joinFarm', (id, password) => {
-        if (id && password) 
+        if (id && password)
             joinFarm(striptags(id), striptags(password), socket, io)
     });
 
     // when the client updates a block
     socket.on('updateBlock', (farmid, row, column, name) => {
-        if (farmid && name) 
+        if (farmid && name)
             updateBlock(striptags(farmid), row, column, name, socket, io)
     });
 
     // When a crop is planted
     socket.on('plantCrop', (farmid, row, column, cropName) => {
-        if (farmid) 
+        if (farmid)
             plantCrop(striptags(farmid), row, column, cropName, socket, io)
     });
 
     // When a crop is planted
     socket.on('harvestCrop', (farmid, row, column) => {
-        if (farmid) 
+        if (farmid)
             harvestCrop(striptags(farmid), row, column)
+    })
+
+    // Retrieve and send all marketplace dataa to client
+    socket.on("retrieveMarketplace", () => {
+        retrieveMarketplace(socket);
+    })
+
+    // Let client list an item on the marketplace
+    socket.on("listOnMarketplace", (farmid, cropName) => {
+        removeCropFromInventory(farmid, cropName);
     })
 })
 
@@ -201,18 +221,11 @@ async function createFarm(name, pass, socket, io) {
         dbo.collection("cropInventories").insertOne(crops, function (err, res) {
             if (err) throw err;
             console.log(`Crops inserted`);
-            db.close();
-            console.log("Farm created")
-            socket.emit('farmCreated', id, pass);
-        });
+            db.close().then(() => {
+                console.log("Farm created")
+                socket.emit('farmCreated', id, pass);
+            });
 
-
-        // Log all farms for simple use
-        dbo.collection("farms").find({}).toArray(function (err, result) {
-            if (err) throw err;
-            console.log(`farms: `);
-            console.log(result);
-            db.close();
         });
 
     });
@@ -228,7 +241,7 @@ async function joinFarm(id, pass, socket, io) {
     console.log("Joining farm: " + id + ":" + pass);
     var errCount = 0;
 
-    MongoClient.connect(url, function (err, db) {
+    await MongoClient.connect(url, function (err, db) {
         if (err) throw err;
 
         var dbo = db.db("farm");
@@ -252,7 +265,7 @@ async function joinFarm(id, pass, socket, io) {
             if (err) {
                 errCount++;
                 throw err;
-            }            console.log('Blocks found')
+            } console.log('Blocks found')
             data.grid = result;
             data.error = null;
             db.close();
@@ -264,7 +277,7 @@ async function joinFarm(id, pass, socket, io) {
             if (err) {
                 errCount++;
                 throw err;
-            }            console.log('Crop inv found')
+            } console.log('Crop inv found')
             data.cropInventory = result;
             db.close();
 
@@ -276,7 +289,7 @@ async function joinFarm(id, pass, socket, io) {
             if (err) {
                 errCount++;
                 throw err;
-            }            console.log('Item inv found')
+            } console.log('Item inv found')
             data.itemInventory = result;
             db.close();
 
@@ -287,7 +300,6 @@ async function joinFarm(id, pass, socket, io) {
                 server.to(id.toString()).emit('farmerJoined', socket.id);
                 socket.emit('farmJoined', data);
             }
-
 
         });
 
@@ -356,19 +368,19 @@ async function sendExpUpdate(farmid, exp) {
 
 }
 
-async function updateExp (farmid, query, exp) {
+async function updateExp(farmid, query, exp) {
     MongoClient.connect(url, function (err, db) {
         if (err) throw err;
         var dbo = db.db("farm");
 
-        dbo.collection("farms").updateOne(query, { $set: { exp:  exp} }, function (err, res) {
+        dbo.collection("farms").updateOne(query, { $set: { exp: exp } }, function (err, res) {
             if (err) throw err;
             console.log("Level updated: " + res);
             // Emit to the room that a block has been updated
             db.close();
             server.to(farmid.toString()).emit('updateExp', exp);
         });
-        
+
     })
 }
 async function updateBlock(farmid, row, column, name, socket, io) {
@@ -449,7 +461,7 @@ async function plantCrop(farmid, row, column, cropName, socket, io) {
                         sendCropBlock(farmid, query, grid, row, column, cropName);
                         break;
                     }
-                    
+
                 }
 
             }
@@ -481,6 +493,7 @@ function canPurchase(farmid, price) {
         });
     });
 }
+
 function sendCropBlock(farmid, query, grid, row, column, cropName) {
     MongoClient.connect(url, function (err, db) {
         if (err) throw err;
@@ -495,3 +508,114 @@ function sendCropBlock(farmid, query, grid, row, column, cropName) {
         });
     });
 }
+
+async function retrieveMarketplace(socket) {
+    MongoClient.connect(url, function (err, db) {
+        if (err) throw err;
+
+        var dbo = db.db("farm");
+
+        // Get all marketplace listings
+        dbo.collection("marketplace").find({}).toArray(function (err, result) {
+            if (err) throw err;
+            // set the settings to the result
+            db.close().then(() => {
+                socket.emit("marketplaceData", result);
+            });
+        });
+    });
+}
+
+async function removeCropFromInventory(farmid, cropName) {
+
+    MongoClient.connect(url, function (err, db) {
+        if (err) throw err;
+        var dbo = db.db("farm");
+
+        var query = { id: farmid };
+        // Find the blocks data for this farm
+        dbo.collection("cropInventories").find(query).toArray(function (err, result) {
+            if (err) {
+                errCount++;
+                throw err;
+            } console.log('Crop inv found')
+            db.close().then(() => {
+                var cropInventory = result[0];
+                console.log("Looking for: " + cropName)
+                for (let i = 0; i < cropInventory.crops.length; i++) {
+                    if (cropInventory.crops[i].name == cropName) {
+                        console.log("Amount found: " + cropInventory.crops[i].amount)
+                        if (cropInventory.crops[i].amount > 0) {
+                            cropInventory.crops[i].amount--;
+                            if (cropInventory.crops[i].amount == 0) {
+                                cropInventory.crops.splice(i, 1);
+                            }
+                            updateCropInventory(farmid, cropName, cropInventory);
+                        }
+                    }
+                }
+            });
+
+        });
+    });
+
+}
+
+async function updateCropInventory(farmid, cropName, cropInventory) {
+    MongoClient.connect(url, function (err, db) {
+        if (err) throw err;
+        var dbo = db.db("farm");
+        // update blocks with added crop
+        dbo.collection("cropInventories").updateOne({ id: farmid }, { $set: { crops: cropInventory.crops } }, function (err, res) {
+            if (err) throw err;
+
+            db.close().then(() => {
+                console.log("Crop inv updated: " + res);
+                // emit to the room that a block has been updated
+                server.to(farmid.toString()).emit('inventoryUpdate', cropInventory);
+                addCropToMarketplace(cropName);
+            });
+        });
+    });
+}
+
+async function addCropToMarketplace(cropName) {
+    MongoClient.connect(url, function (err, db) {
+        if (err) throw err;
+        // Connect to db
+        var dbo = db.db("farm");
+
+        for (let i = 0; i < crops.length; i++) {
+            if (crops[i].name == cropName) {
+                // insert the farm settings
+                const obj = {
+                    name: cropName,
+                    icon: crops[i].icon,
+                    level: crops[i].level,
+                    price: 2
+                }
+                dbo.collection("marketplace").insertOne(obj, function (err, res) {
+                    if (err) throw err;
+                    console.log(`Added item to marketplace ${cropName}`);
+                    db.close();
+                });
+                return;
+            }
+
+        }
+        // Create the new farm obj with the data
+
+
+
+    })
+}
+
+// MongoClient.connect(url, function(err, db) {
+//     if (err) throw err;
+//     var dbo = db.db("farm");
+//     dbo.collection("farms").deleteMany({}, function(err, obj) {
+//       if (err) throw err;
+//       console.log(obj.result.n + " document(s) deleted");
+//       db.close();
+//     });
+//   });

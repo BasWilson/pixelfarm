@@ -15,17 +15,18 @@ function createCollections() {
     MongoClient.connect(url, function (err, db) {
         if (err) throw err;
         var dbo = db.db("farm");
-        // dbo.createCollection("farms", function (err, res) {
-        //     if (err) throw err;
-        //     console.log("Farms Collection created!");
-        //     db.close();
-        // });
+        
+        dbo.createCollection("farms", function (err, res) {
+            if (err) throw err;
+            console.log("Farms Collection created!");
+            db.close();
+        });
 
-        // dbo.createCollection("blocks", function (err, res) {
-        //     if (err) throw err;
-        //     console.log("Blocks Collection created!");
-        //     db.close();
-        // });
+        dbo.createCollection("blocks", function (err, res) {
+            if (err) throw err;
+            console.log("Blocks Collection created!");
+            db.close();
+        });
 
         dbo.createCollection("cropInventories", function (err, res) {
             if (err) throw err;
@@ -38,5 +39,13 @@ function createCollections() {
             console.log("itemInventories Collection created!");
             db.close();
         });
+
+        dbo.createCollection("marketplace", function (err, res) {
+            if (err) throw err;
+            console.log("marketplace Collection created!");
+            db.close();
+        });
+
+        
     });
 }

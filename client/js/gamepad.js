@@ -10,7 +10,7 @@ var gpButtons = [
     { inUse: false, name: "Right bumper", function: select },
     { inUse: false, name: "Left trigger", function: select },
     { inUse: false, name: "Right trigger", function: select },
-    { inUse: false, name: "Select", function: select },
+    { inUse: false, name: "Select", function: toggleManagementMenu },
     { inUse: false, name: "Start", function: select },
     { inUse: false, name: "Left stick", function: select },
     { inUse: false, name: "Right stick", function: select },

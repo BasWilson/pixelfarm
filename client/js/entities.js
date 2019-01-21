@@ -38,7 +38,7 @@ const blocksPrefabs = {
       'use': plantCrop,
       'prematureIcon': '🌱',
       'icon': '🍇',
-      'growTime': 3600,
+      'growTime': 200,
       'level': 30
   
     },
@@ -48,7 +48,7 @@ const blocksPrefabs = {
       'use': plantCrop,
       'prematureIcon': '🌱',
       'icon': '🍉',
-      'growTime': 7200,
+      'growTime': 250,
       'level': 40
     },
     {
@@ -96,11 +96,4 @@ const blocksPrefabs = {
       'growTime': 28,
       'level': 5,
     }
-  ]
-
-  const inGameMenuItems = [
-      {
-          'text': 'Marketplace',
-          'use': viewMarketplace
-      }
   ]

@@ -1,0 +1,126 @@
+.marketplace {
+    display: none;
+    position: fixed;
+    background-color: #AEE7FF;
+    font-family: 'ZCOOL KuaiLe', cursive;
+    top: 0px;
+    right: 0px;
+    bottom: 0px;
+    left: 0px;
+    z-index: 1000;
+    font-size: 30px;
+    color: black;
+}
+
+.marketplace-items {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    margin-top: 20px;
+}
+.marketplace-item {
+    padding: 10px 30px;
+    width: 92%;
+    height: 40px;
+    line-height: 40px;
+    display: flex;
+    flex-direction: row;
+    font-size: 25px;
+    background-color: #90CF6A;
+    color: black;
+    margin: 0px auto;
+    margin-top: 10px;
+    justify-content: space-between;
+    border-radius: 9px;
+}
+
+.marketplace-item-icon {
+    font-size: 40px;
+}
+
+.selected-marketplace-item {
+  border: 4px solid black;
+}
+
+
+.management {
+    display: none;
+    position: fixed;
+    background-color: #AEE7FF;
+    font-family: 'ZCOOL KuaiLe', cursive;
+    top: 0px;
+    right: 0px;
+    bottom: 0px;
+    left: 0px;
+    z-index: 1000;
+    font-size: 30px;
+    color: black;
+}
+
+.management-items {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    margin-top: 20px;
+}
+.management-item {
+    padding: 10px 30px;
+    width: 60%;
+    height: 40px;
+    line-height: 40px;
+    display: flex;
+    flex-direction: row;
+    font-size: 25px;
+    background-color: #90CF6A;
+    color: black;
+    margin: 0px auto;
+    margin-top: 10px;
+    border-radius: 9px;
+}
+
+.selected-management-item {
+    border: 4px solid black;
+  }
+
+  .inventory {
+    display: none;
+    position: fixed;
+    background-color: #AEE7FF;
+    font-family: 'ZCOOL KuaiLe', cursive;
+    top: 0px;
+    right: 0px;
+    bottom: 0px;
+    left: 0px;
+    z-index: 1000;
+    font-size: 30px;
+    color: black;
+}
+
+.inventory-items {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    margin-top: 20px;
+}
+.inventory-item {
+    padding: 10px 30px;
+    width: 60%;
+    height: 40px;
+    line-height: 40px;
+    display: flex;
+    flex-direction: row;
+    font-size: 25px;
+    background-color: #90CF6A;
+    color: black;
+    margin: 0px auto;
+    margin-top: 10px;
+    justify-content: space-between;
+    border-radius: 9px;
+}
+
+.selected-inventory-item {
+    border: 4px solid black;
+  }

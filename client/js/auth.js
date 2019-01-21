@@ -62,13 +62,13 @@ socket.on('farmCreated', (id, password) => {
     cropInventory = data.cropInventory[0].crops;
     calcDimensions();
     $('#farm-money').text(`$${settings.money.toString().toUpperCase()}`)
+    $('#marketplace-money').text(`Money: $${settings.money.toString().toUpperCase()}`)
     $('#farm-name').text(`${settings.name.toUpperCase()}'S FARM`)
     $('#farm-id').text(`SHARE ID: ${settings.id}`)
     calculateLevel();
     // Show game
-    $('#wrapper').fadeToggle('fast', () => {
-      loaded = true;
-    });
+
+    setActiveHudLayers(['.hud', '.farm-field', '.farm-settings']);
   
   })
   

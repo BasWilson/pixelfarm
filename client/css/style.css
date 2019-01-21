@@ -27,7 +27,7 @@ nav {
 .noti-box {
   display: none; 
   position: fixed; 
-  z-index: 10;
+  z-index: 10000;
   bottom: 0px;
   left: 0px;
   max-height: fit-content;
