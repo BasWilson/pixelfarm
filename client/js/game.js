@@ -60,7 +60,7 @@ function spawnFarm(columns, rows) {
     for (let c = 0; c < columns; c++) {
 
       // Apply properties
-      const block = `<div onmouseover="selectBlockMouse(this.id)" onclick="blockInteraction()" style="width: ${screenGrid.blockWidth}px; height: ${screenGrid.blockHeight}px; border: 1px solid darkgreen; font-size: 0px; background-color: ${getColor(r, c)}" id="${r}-${c}" class="block">${getCrop(r, c)}</div>`;
+      const block = `<div style="width: ${screenGrid.blockWidth}px; height: ${screenGrid.blockHeight}px; border: 1px solid darkgreen; font-size: 0px; background-color: ${getColor(r, c)}" id="${r}-${c}" class="block">${getCrop(r, c)}</div>`;
       createdBlocks += block;
       // Check if its growing
       if (grid[r][c].startedGrowing != 0) {
@@ -107,7 +107,7 @@ function blockInteraction(id) {
   if (selectedItem) {
     selectedItem.use()
   } else {
-    showNotification(2500, "Please select an item from your inventory")
+    showNotification(2500, "Please select an item from your inventory", false)
   }
 }
 
@@ -118,6 +118,8 @@ function harvestCrop() {
     // grid[screenGrid.selectedRow][screenGrid.selectedColumn].name = blocksPrefabs.dirt.name;
     // $(`#${screenGrid.selectedRow}-${screenGrid.selectedColumn}`).text('');
     socket.emit('harvestCrop', settings.id, screenGrid.selectedRow, screenGrid.selectedColumn)
+    $(`#${screenGrid.selectedRow}-${screenGrid.selectedColumn}`).css('fontSize', '0px');
+
   }
 }
 
@@ -130,7 +132,7 @@ function plantCrop() {
     console.log('sending')
     socket.emit('plantCrop', settings.id, screenGrid.selectedRow, screenGrid.selectedColumn, cropInventory[hudCrops.selectedRow].name)
   } else {
-    showNotification(3000, "Prepare the land before trying to plant seeds", true)
+    showNotification(3000, "Prepare the land before trying to plant seeds", false)
   }
 }
 
@@ -146,7 +148,7 @@ function prepareBlock() {
 }
 
 // Unused function to update money in the UI
-function updateMoney(moneyToAdd) {
+function updateMoney() {
   $('#marketplace-money').text(`$${settings.money.toString().toUpperCase()}`)
   $('#farm-money').text(`$${settings.money.toString().toUpperCase()}`)
 }
@@ -166,6 +168,11 @@ function playSound(sound) {
   s.play();
 }
 
+function playUISound(sound) {
+  var s = new Audio(`sounds/${sound}.wav`);
+  s.loop = false;
+  s.play();
+}
 // Interval to check progress on stuff that is growing
 function checkGrowings() {
   setInterval(() => {
@@ -238,6 +245,7 @@ function calculateLevel() {
       return;
     }
     prevLevelExp = expCount;
+
   }
 
 }
@@ -263,7 +271,7 @@ function spawnItems() {
         itemInventory[it].use = items[i].use
 
         // Create the UI element
-        const item = `<button onmouseover="selectItemMouse(this.id)" onclick="selectItem(this.id)" id="item-${it}" class="item">${itemInventory[it].name.toUpperCase()}</button></br>`;
+        const item = `<button id="item-${it}" class="item">${itemInventory[it].name.toUpperCase()}</button></br>`;
         createdItems += item;
       }
     }
@@ -280,6 +288,7 @@ function spawnCrops() {
 
   // Set the amount of items
   hudCrops.items = cropInventory.length;
+  $('.crops').empty()
 
   var createdCrops = "";
 
@@ -287,13 +296,13 @@ function spawnCrops() {
     for (var i = 0; i < crops.length; i++) {
       if (cropInventory[it].name == crops[i].name) {
         cropInventory[it].use = crops[i].use
-        const crop = `<button onmouseover="selectCropMouse(this.id)" onclick="selectCrop(this.id)" id="crop-${it}" class="crop">${cropInventory[it].name.toUpperCase()} </button>${cropInventory[it].amount}x</br>`;
+        const crop = `<button id="crop-${it}" class="crop">${cropInventory[it].name.toUpperCase()} </button>${cropInventory[it].amount}x</br>`;
         createdCrops += crop;
       }
     }
   }
   $('.crops').append(createdCrops)
-  $('#crop-0').addClass('selected-crop')
+  $('#crop-0').addClass('selected-crop');
 
 }
 
@@ -304,17 +313,21 @@ function selectItem() {
   $('#farm-selected-item').html(`Selected item:<span style="color: cyan"> ${selectedItem.name.toUpperCase()}</span>`);
   //for keybourd: hideAllHud()
   toggleItems()
-  playSound('click');
+  playUISound('enter');
 }
 
 // When navigation the menu with the gamepad this function is used to select an crop
 function selectCrop() {
   //item = item.substr(item.length - 1);
   selectedItem = cropInventory[hudCrops.selectedRow];
+  if (selectItem.amount < 1) {
+    playUISound('error');
+    return;
+  }
   $('#farm-selected-item').html(`Selected crop:<span style="color: rgb(255, 0, 242)"> ${selectedItem.name.toUpperCase()}</span>`);
   //for keybourd: hideAllHud()
   toggleCrops()
-  playSound('click');
+  playUISound('enter');
 }
 
 
@@ -373,5 +386,43 @@ socket.on('singleCropBlockUpdate', (row, column, cropName, growTime, startedGrow
 })
 
 socket.on('updateMoney', (money) => {
-  updateMoney(money);
+  settings.money = money
+  updateMoney();
 })
+
+var players = [];
+
+socket.on('playerMoved', (player) => {
+  for (let i = 0; i < players.length; i++) {
+    if (players[i].socketId == player.socketId) {
+      if (players[i].socketId != socket.id) {
+        $(`#${players[i].row}-${players[i].column}`).removeClass('selected-block-other');
+        players[i].row = player.row;
+        players[i].column = player.column;
+        $(`#${players[i].row}-${players[i].column}`).addClass('selected-block-other');
+      }
+      return;
+    }
+  }
+  players.push(player);
+
+  for (let z = 0; z < players.length; z++) {
+  // box-shadow: 0 0 10px  rgb(255, 0, 242) !important;
+  if (players[z].socketId != socket.id) {
+
+    $(`#${players[z].row}-${players[z].column}`).addClass('selected-block-other');
+  }
+  }
+})
+
+var previousSelectedRow = -1, previousSelectedColumn = -1;
+setInterval(() => {
+  if (settings) {
+    if (screenGrid.selectedRow != previousSelectedRow || screenGrid.selectedColumn != previousSelectedColumn) {
+      previousSelectedRow = screenGrid.selectedRow;
+      previousSelectedColumn = screenGrid.selectedColumn;
+      socket.emit('moveUpdate', settings.id, screenGrid.selectedRow, screenGrid.selectedColumn);
+  }
+  }
+
+}, 100);

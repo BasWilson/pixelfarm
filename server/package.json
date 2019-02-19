@@ -9,6 +9,11 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "sqlite-async": "^1.0.11"
+    "mongod": "^2.0.0",
+    "mongodb": "^3.1.13",
+    "randomcolor": "^0.5.4",
+    "socket.io": "^2.2.0",
+    "sqlite-async": "^1.0.11",
+    "striptags": "^3.1.1"
   }
 }

@@ -6,6 +6,7 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="shortcut icon" type="image/png" href="images/favicon.png"/>
 
   <!-- import the webpage's stylesheet -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css" />
@@ -78,6 +79,9 @@
             <div id="management-item-1" class="management-item">
                 <a>Inventory</a>
             </div>
+            <div id="management-item-2" class="management-item">
+              <a>Shop</a>
+          </div>
         </div>
       </div>
 
@@ -85,6 +89,13 @@
       <p>Marketplace</p>
       <p id="marketplace-money"></p>
       <div class="marketplace-items">
+      </div>
+    </div>
+
+    <div class="shop">
+      <p>Shop</p>
+      <p id="shop-money"></p>
+      <div class="shop-items">
       </div>
     </div>
 
@@ -125,6 +136,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/1.18.0/TweenMax.min.js"></script>
+  <script src="js/howler.js"></script>
   <script src="js/controls.js"></script>
   <script src="js/socket.js"></script>
   <script src="js/hud.js"></script>
@@ -132,6 +144,7 @@
   <script src="js/game.js"></script>
   <script src="js/inventory.js"></script>
   <script src="js/marketplace.js"></script>
+  <script src="js/shop.js"></script>
   <script src="js/entities.js"></script>
   <script src="js/mouseKeyboard.js"></script>
   <script src="js/mainmenu.js"></script>

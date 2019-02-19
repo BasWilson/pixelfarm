@@ -14,16 +14,18 @@
 
 .marketplace-items {
     width: 100%;
-    height: 100%;
+    height: 85vh;
     display: flex;
     flex-direction: column;
     margin-top: 20px;
+    overflow-y: auto;
 }
 .marketplace-item {
     padding: 10px 30px;
     width: 92%;
     height: 40px;
     line-height: 40px;
+    min-height: 40px;
     display: flex;
     flex-direction: row;
     font-size: 25px;
@@ -124,3 +126,50 @@
 .selected-inventory-item {
     border: 4px solid black;
   }
+
+  .shop {
+    display: none;
+    position: fixed;
+    background-color: #AEE7FF;
+    font-family: 'ZCOOL KuaiLe', cursive;
+    top: 0px;
+    right: 0px;
+    bottom: 0px;
+    left: 0px;
+    z-index: 1000;
+    font-size: 30px;
+    color: black;
+}
+
+.shop-items {
+    width: 100%;
+    height: 85vh;
+    display: flex;
+    flex-direction: column;
+    margin-top: 20px;
+    overflow-y: auto;
+}
+.shop-item {
+    padding: 10px 30px;
+    width: 92%;
+    height: 40px;
+    line-height: 40px;
+    min-height: 40px;
+    display: flex;
+    flex-direction: row;
+    font-size: 25px;
+    background-color: #90CF6A;
+    color: black;
+    margin: 0px auto;
+    margin-top: 10px;
+    justify-content: space-between;
+    border-radius: 9px;
+}
+
+.shop-item-icon {
+    font-size: 40px;
+}
+
+.selected-shop-item {
+  border: 4px solid black;
+}

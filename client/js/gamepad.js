@@ -25,6 +25,7 @@ window.addEventListener("gamepaddisconnected", function (e) {
     console.log("Waiting for gamepad.");
     connected = false;
     showNotification(99999*99999, "🎮 Please connect a controller", false);
+    playUISound('error');
     cancelRequestAnimationFrame(start);
 });
 
@@ -33,13 +34,14 @@ window.addEventListener("gamepadconnected", function (e) {
     // asign this gamepad event as the current gamepad
     var gp = navigator.getGamepads()[e.gamepad.index];
     connected = true;
-    showNotification(2500, "🎮 Controller has been connected", true);
+    showNotification(2500, "🎮 Controller has been connected", true, false);
+    playUISound('controller');
     update();
 });
 
 var conInterval = setInterval(() => {
     if (loaded && !connected) {
-        showNotification(99999*99999, "🎮 Please connect a controller", false);
+        showNotification(99999*99999, "🎮 Please connect a controller", false, false);
     }
 }, 1000);
 

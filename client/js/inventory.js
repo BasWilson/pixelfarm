@@ -21,6 +21,15 @@ function loadInventory () {
         `;
     }
     $(".inventory-items").append(items);
+
+
+    if (hudInventoryItems.items == 1) {
+        hudInventoryItems.selectedRow = 0;
+    }
+    $(`#inventory-item-${hudInventoryItems.selectedRow}`).addClass('selected-inventory-item');
+
+
+    spawnCrops();
 }
 
 

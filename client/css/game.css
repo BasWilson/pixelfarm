@@ -66,6 +66,13 @@
   cursor: pointer;
 }
 
+.selected-block-other {
+  box-shadow: 0 0 10px  white !important;
+  transition: all .1s ease-in-out;
+  transform: scale(1.2); 
+  cursor: pointer;
+}
+
 .crops {
   display: none;
   position: absolute;

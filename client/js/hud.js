@@ -1,5 +1,5 @@
 // This makes the notifications
-function showNotification(duration, text, status) {
+function showNotification(duration, text, status, sound = true) {
 
   // Get the elements
   var notiText = document.getElementById('noti-text');
@@ -9,24 +9,26 @@ function showNotification(duration, text, status) {
 
   // Set the properties
   notiText.innerHTML = text;
-  notiText.style.fontSize = (screenGrid.blockHeight - 10) + "px";
-  notiText.style.lineHeight = (screenGrid.blockHeight) + "px";
 
+  console.log(status)
   if (status) {
-    notiBox.style.backgroundColor = "cyan";
+    notiBox.style.backgroundColor = "rgba(174, 231, 255, .5)";
     notiText.style.color = "black";
   } else {
     notiText.style.color = "white";
-    notiBox.style.backgroundColor = "crimson";
+    notiBox.style.backgroundColor = "rgba(220,20,60, .5)";
   }
 
   // Show it
-  $('.noti-box').fadeIn("fast");
+  $('.noti-box').show(300);
 
+  if (sound) {
+    playUISound('standby');
+
+  }
   // Start a timeout to hide it after given ms
   notificationTimeout = setTimeout(function () {
-    notiText.innerHTML = "";
-    $('.noti-box').fadeOut("fast");
+    $('.noti-box').hide(300);
     notificationTimeout = -1;
   }, duration)
 
@@ -34,6 +36,7 @@ function showNotification(duration, text, status) {
 
 // The toggle functions are to toggle the menus for crops and items
 function toggleCrops() {
+  socket.emit('retrieveInventory', settings.id);
   // if crops is being shown we show the hud , else we hide hud and show the crops
   if ($('.crops').css('display') == 'none') {
     $(`#${screenGrid.selectedRow}-${screenGrid.selectedColumn}`).removeClass('selected-block')
@@ -56,6 +59,8 @@ function toggleCrops() {
     // Change the displayed buttons so you know what to do
     setActiveHudLayers(['.farm-field', '.farm-settings'])
   }
+  playUISound("turnon");
+
 }
 
 function toggleItems() {
@@ -80,6 +85,7 @@ function toggleItems() {
     // Change the displayed buttons so you know what to do
     setActiveHudLayers(['.farm-field', '.farm-settings'])
   }
+  playUISound("turnon");
 }
 
 function toggleMarketplace() {
@@ -107,7 +113,37 @@ function toggleMarketplace() {
     setActiveHudLayers(['.farm-field', '.farm-settings'])
     $(`#marketplace-item-${hudMarketplaceItems.selectedRow}`).removeClass('selected-marketplace-item');
   }
+  playUISound("turnon");
 }
+
+function toggleShop() {
+  if ($('.shop').css('display') == 'none') {
+    $(`#${screenGrid.selectedRow}-${screenGrid.selectedColumn}`).removeClass('selected-block');
+    gpButtons[1].function = toggleManagementMenu;
+    gpButtons[0].function = purchaseItemFromShop;
+    gpButtons[12].function = hudShopNavigate;
+    gpButtons[13].function = hudShopNavigate;
+    gpButtons[14].function = hudShopNavigate;
+    gpButtons[15].function = hudShopNavigate;
+    // Change the displayed buttons so you know what to do
+    retrieveShop();
+    setActiveHudLayers(['.farm-field', '.shop']);
+    $(`#shop-item-${hudMarketplaceItems.selectedRow}`).addClass('selected-shop-item');
+  } else {
+    $(`#${screenGrid.selectedRow}-${screenGrid.selectedColumn}`).addClass('selected-block')
+    gpButtons[1].function = select;
+    gpButtons[0].function = blockInteraction;
+    gpButtons[12].function = move;
+    gpButtons[13].function = move;
+    gpButtons[14].function = move;
+    gpButtons[15].function = move;
+    // Change the displayed buttons so you know what to do
+    setActiveHudLayers(['.farm-field', '.farm-settings'])
+    $(`#shop-item-${hudMarketplaceItems.selectedRow}`).removeClass('selected-shop-item');
+  }
+  playUISound("turnon");
+}
+
 
 function toggleManagementMenu () {
   if ($('.management').css('display') == 'none') {
@@ -133,6 +169,7 @@ function toggleManagementMenu () {
     setActiveHudLayers(['.farm-field', '.farm-settings'])
     $(`#management-item-${hudManagementItems.selectedRow}`).removeClass('selected-management-item');
   }
+  playUISound("turnon");
 }
 
 function toggleInventoryMenu () {
@@ -160,6 +197,7 @@ function toggleInventoryMenu () {
     setActiveHudLayers(['.farm-field', '.management'])
     $(`#inventory-item-${hudInventoryItems.selectedRow}`).removeClass('selected-inventory-item');
   }
+  playUISound("turnon");
 }
 
 
@@ -190,6 +228,10 @@ var hudLayers = [
   },
   {
     element: ".marketplace",
+    buttons: [{ button: 'x', text: 'Buy' }, { button: 'circle', text: 'Back' }]
+  },
+  {
+    element: ".shop",
     buttons: [{ button: 'x', text: 'Buy' }, { button: 'circle', text: 'Back' }]
   },
   {
@@ -227,7 +269,13 @@ function changeButtons(buttonArray) {
 function selectManagementMenu () {
   if (hudManagementItems.selectedRow == 0) {
     toggleMarketplace();
-  } else {
+  } else if (hudManagementItems.selectedRow == 1)  {
     toggleInventoryMenu();
+  } else {
+    toggleShop();
   }
 }
+
+socket.on('errorMessage', (message) => {
+  showNotification(3000, message, false);
+})

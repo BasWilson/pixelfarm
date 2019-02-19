@@ -24,11 +24,16 @@ var hudMarketplaceItems = {
 }
 
 var hudManagementItems = {
-    items: 2,
+    items: 3,
     selectedRow: 0
 }
 
 var hudInventoryItems = {
+    items: 0,
+    selectedRow: 0
+}
+
+var hudShopItems = {
     items: 0,
     selectedRow: 0
 }
@@ -68,6 +73,7 @@ function hudItemNavigate(direction) {
             $(`#item-${hudItems.selectedRow}`).addClass('selected-item');
         }
     }
+    playUISound("tick");
 }
 
 // Same as above
@@ -85,6 +91,7 @@ function hudCropNavigate(direction) {
             $(`#crop-${hudCrops.selectedRow}`).addClass('selected-crop');
         }
     }
+    playUISound("tick");
 }
 
 function hudMarketplaceNavigate(direction) {
@@ -93,14 +100,29 @@ function hudMarketplaceNavigate(direction) {
             $(`#marketplace-item-${hudMarketplaceItems.selectedRow}`).removeClass('selected-marketplace-item');
             hudMarketplaceItems.selectedRow--;
             $(`#marketplace-item-${hudMarketplaceItems.selectedRow}`).addClass('selected-marketplace-item');
+            $('.marketplace-items').animate({ 
+                scrollTop: $('.marketplace-items').scrollTop() - 70
+            }, 100);
         }
     } else if (direction == 13) {
         if (hudMarketplaceItems.selectedRow < hudMarketplaceItems.items - 1) {
+            console.log("Scrolling down")
             $(`#marketplace-item-${hudMarketplaceItems.selectedRow}`).removeClass('selected-marketplace-item');
             hudMarketplaceItems.selectedRow++;
             $(`#marketplace-item-${hudMarketplaceItems.selectedRow}`).addClass('selected-marketplace-item');
+
+            $('.marketplace-items').animate({ 
+                scrollTop: $('.marketplace-items').scrollTop() + 70
+            }, 100);
+
+            // $('.marketplace-items').animate({ 
+            //     scrollTop:  $(`#marketplace-item-${hudMarketplaceItems.selectedRow - 1}`).offset().top - 80 
+            // }, 100);
+
         }
     }
+    playUISound("tick");
+
 }
 
 function hudManagementNavigate(direction) {
@@ -117,6 +139,7 @@ function hudManagementNavigate(direction) {
             $(`#management-item-${hudManagementItems.selectedRow}`).addClass('selected-management-item');
         }
     }
+    playUISound("tick");
 }
 
 
@@ -134,6 +157,27 @@ function hudInventoryNavigate(direction) {
             $(`#inventory-item-${hudInventoryItems.selectedRow}`).addClass('selected-inventory-item');
         }
     }
+    playUISound("tick");
+
+}
+
+
+function hudShopNavigate(direction) {
+    if (direction == 12) {
+        if (hudShopItems.selectedRow > 0) {
+            $(`#shop-item-${hudShopItems.selectedRow}`).removeClass('selected-shop-item');
+            hudShopItems.selectedRow--;
+            $(`#shop-item-${hudShopItems.selectedRow}`).addClass('selected-shop-item');
+        }
+    } else if (direction == 13) {
+        if (hudShopItems.selectedRow < hudShopItems.items - 1) {
+            $(`#shop-item-${hudShopItems.selectedRow}`).removeClass('selected-shop-item');
+            hudShopItems.selectedRow++;
+            $(`#shop-item-${hudShopItems.selectedRow}`).addClass('selected-shop-item');
+        }
+    }
+    playUISound("tick");
+
 }
 
     // These handle the movement on the grid
@@ -184,3 +228,4 @@ function hudInventoryNavigate(direction) {
             }
         }
     }
+    
